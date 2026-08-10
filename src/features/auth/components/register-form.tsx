@@ -12,29 +12,35 @@ import {Card,CardContent,CardDescription,CardHeader,CardTitle} from "@/component
 import {Form,FormControl,FormField,FormItem,FormLabel,FormMessage} from "@/components/ui/form"
 import { email } from "better-auth"
 import { Input } from "@/components/ui/input";
-import { auth } from "@/lib/auth"
 import { authClient } from "@/lib/auth-client"
 
-const loginSchema = z.object({
+const registerSchema = z.object({
     email: z.string().email("Please enter valid email"),
-    password: z.string().min(1,"Password is required")
+    password: z.string().min(1,"Password is required"),
+     confirmPassword: z.string(),
 })
+.refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"]
+});
 
-type LoginFormValues = z.infer<typeof loginSchema>
+type RegisterFormValues = z.infer<typeof registerSchema>
 
-export function LoginForm(){
+export function RegisterForm(){
     const router = useRouter()
-    const form = useForm<LoginFormValues>({
-        resolver:zodResolver(loginSchema),
+    const form = useForm<RegisterFormValues>({
+        resolver:zodResolver(registerSchema),
         defaultValues:{
             email:"",
-            password:""
+            password:"",
+            confirmPassword:"",
         }
     })
 
-    const onsubmit = async (values:LoginFormValues) =>{
-        await authClient.signIn.email(
+    const onsubmit = async (values:RegisterFormValues) =>{
+        await authClient.signUp.email(
             {
+                name: values.email,
                 email: values.email,
                 password: values.password,
                 callbackURL: "/",
@@ -45,7 +51,7 @@ export function LoginForm(){
                 },
                 onError: (ctx) => {
                     toast.error(ctx.error.message);
-                },
+                }
             }
         )
     }
@@ -56,8 +62,8 @@ export function LoginForm(){
         <div className="flex flex-col gap-6">
             <Card>
                 <CardHeader className="text-center">
-                    <CardTitle>Welcome back</CardTitle>
-                    <CardDescription>Login to continue</CardDescription>
+                    <CardTitle>Get started</CardTitle>
+                    <CardDescription>Create your Account</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -110,14 +116,30 @@ export function LoginForm(){
                                             </FormItem>
                                         )}
                                     />
+                                    <FormField
+                                        control={form.control}
+                                        name="confirmPassword"
+                                        render={({field})=>(
+                                            <FormItem>
+                                                <FormLabel>Confirm Password</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="password"
+                                                        placeholder="********"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
                                     <Button type="submit" className="w-full" disabled={isPending}>
-                                        Login
+                                        Signup
                                     </Button>
                                 </div>
                                 <div className="mt-4 text-center text-sm">
-                                        Don&apos;t have an Account?{" "}
-                                        <Link href="/signup" className="underline underline-offset-4">
-                                         Signup
+                                        Already have an Account?{" "}
+                                        <Link href="/login" className="underline underline-offset-4">
+                                         Login
                                          </Link>
                                 </div>
                             </div>
