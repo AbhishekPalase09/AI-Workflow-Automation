@@ -75,13 +75,19 @@ export function RegisterForm(){
                                             className="w-full"
                                             type="button"
                                             disabled={isPending}
-                                        >Continue with Github</Button>
+                                        >
+                                            <Image alt="Github" src="/logos/github.svg" 
+                                            width={20} height={20}/>
+                                            Continue with Github</Button>
                                         <Button
                                             variant={"outline"}
                                             className="w-full"
                                             type="button"
                                             disabled={isPending}
-                                        >Continue with Google</Button>
+                                        >
+                                            <Image alt="Google" src="/logos/google.svg" 
+                                            width={20} height={20}/>
+                                            Continue with Google</Button>
                                 </div>
                                 <div className="grid gap-6">
                                     <FormField
