@@ -1,11 +1,7 @@
+import { TRPCError } from "@trpc/server";
 import { inngest } from "@/inngest/client";
-import { resolve } from 'path';
-import { createTRPCRouter, protectedProcedure } from '../init';
-import prisma from '@/lib/db';
-import { email } from 'better-auth';
-
-import { google } from '@ai-sdk/google';
-import { generateText } from 'ai';
+import prisma from "@/lib/db";
+import { createTRPCRouter, protectedProcedure } from "../init";
 
 export const appRouter = createTRPCRouter({
   testAi: protectedProcedure.mutation(async () => {
@@ -14,11 +10,16 @@ export const appRouter = createTRPCRouter({
     //   prompt: 'Write a vegetarian lasagna recipe for 4 people.',
     // });
 
-    await inngest.send({
-      name:"execute/ai"
-    })
+    // throw new TRPCError({
+    //   code: "BAD_REQUEST",
+    //   message: "Something whent wrong",
+    // });
 
-    return { success: true, message: "Job queued" }
+    await inngest.send({
+      name: "execute/ai",
+    });
+
+    return { success: true, message: "Job queued" };
   }),
   getWorkflows: protectedProcedure.query(({ ctx }) => {
     return prisma.workflow.findMany();
@@ -28,10 +29,9 @@ export const appRouter = createTRPCRouter({
       name: "test/hello.world",
       data: {
         email: "mandar@gmail.com",
-      }
-    })
-    return { success: true, message: "Job queued" }
-
+      },
+    });
+    return { success: true, message: "Job queued" };
   }),
 });
 
