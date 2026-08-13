@@ -1,31 +1,81 @@
 import { inngest } from "./client";
 import prisma from "@/lib/db";
+import * as Sentry from "@sentry/node";
 
-export const helloWorld = inngest.createFunction(
-  {
-    id: "hello-world", 
-    triggers: [
-      {
-        event: "test/hello.world",
-      },
-    ],
-  },
+
+// import { createGoogle } from '@ai-sdk/google';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { generateText } from "ai";
+
+// const google = createGoogle();
+const google = createGoogleGenerativeAI();
+const openai = createOpenAI();
+const anthropic = createAnthropic();
+
+Sentry.setConversationId("my-conversation-123");
+
+
+
+export const execute = inngest.createFunction(
+  { id: "execute-ai" },
+  { event: "execute/ai" },
   async ({ event, step }) => {
-    // Fetching the video
-    await step.sleep("fetching", "5s");
+    // await step.sleep("pretend", "5s")
 
-    // Transcribing
-     await step.sleep("transcribing", "5s");
+    console.warn("This is a warning");
+    Sentry.logger.info('User triggered test log',{ log_source:'sentry_test' })
 
-    //sending Trancription to AI
-     await step.sleep("sending to Ai", "5s");
+    const { steps: geminiSteps } = await step.ai.wrap(
+      "gemini-generate-text",
+      generateText,
+      {
+        model: google("gemini-2.5-flash"),
+        system: "You are a helpfull assistant",
+        prompt: "Write a long paragraph about the movie the sixth sense",
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: "joke_agent",
+          recordInputs: true,
+          recordOutputs: true,
+        },
+      }
+    );
+    // const { steps: openaiSteps } = await step.ai.wrap(
+    //   "openai-generate-text",
+    //   generateText,
+    //   {
+    //     model: openai("gpt-3.5-turbo"),
+    //     system: "You are a helpfull assistant",
+    //     prompt: "Write a long paragraph about the movie the sixth sense",
+    //     experimental_telemetry: {
+    //       isEnabled: true,
+    //       recordInputs: true,
+    //       recordOutputs: true
+    //     }
+    //   }
+    // );
+    // const { steps: anthropicSteps } = await step.ai.wrap(
+    //   "anthropic-generate-text",
+    //   generateText,
+    //   {
+    //     model: anthropic("claude-fable-5"),
+    //     system: "You are a helpfull assistant",
+    //     prompt: "Write a long paragraph about the movie the sixth sense",
+    //     experimental_telemetry: {
+    //       isEnabled: true,
+    //       recordInputs: true,
+    //       recordOutputs: true
+    //     }
+    //   }
+    // );
 
-    await step.run("create-workflow",()=>{
-        return prisma.workflow.create({
-            data:{
-                name:"workflow-from-inngest",
-            },
-        });
-    });
-  },
+    return {
+      geminiSteps,
+      // To be used when api keys are give
+      // openaiSteps,
+      // anthropicSteps
+    };
+  }
 );
