@@ -1,10 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { inngest } from "@/inngest/client";
 import prisma from "@/lib/db";
-import { createTRPCRouter, protectedProcedure } from "../init";
+import { baseProcedure, createTRPCRouter, premiumProcedure, protectedProcedure } from "../init";
 
 export const appRouter = createTRPCRouter({
-  testAi: protectedProcedure.mutation(async () => {
+  testAi: premiumProcedure.mutation(async () => {
     // const { text } = await generateText({
     //   model: google('gemini-2.5-flash'),
     //   prompt: 'Write a vegetarian lasagna recipe for 4 people.',
