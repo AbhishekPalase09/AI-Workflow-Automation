@@ -34,4 +34,4 @@ export const useHasActiveSubscription = () => {
         isLoading,
         ...rest,
     };
-};
+};

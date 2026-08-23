@@ -42,6 +42,7 @@
     "lucide-react": "^1.30.0",
     "next": "15.5.4",
     "next-themes": "^0.4.6",
+    "nuqs": "^2.10.0",
     "pg": "^8.23.0",
     "radix-ui": "^1.6.7",
     "random-word-slugs": "^0.1.7",
