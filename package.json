@@ -39,6 +39,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
+    "handlebars": "^4.7.9",
     "inngest": "^3.44.1",
     "input-otp": "^1.4.2",
     "jotai": "^2.20.3",
