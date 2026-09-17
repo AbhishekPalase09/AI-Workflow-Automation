@@ -17,6 +17,7 @@
     "@ai-sdk/openai": "^4.0.41",
     "@base-ui/react": "^1.7.0",
     "@hookform/resolvers": "^5.7.1",
+    "@inngest/realtime": "^0.4.6",
     "@neondatabase/serverless": "^1.1.0",
     "@paralleldrive/cuid2": "^3.3.0",
     "@polar-sh/better-auth": "^1.8.4",
