@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -9,16 +8,16 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String     @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String     @unique
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now()) @updatedAt
+  workflows     Workflow[]
   accounts      Account[]
   sessions      Session[]
-  workflows     Workflow[]
 
   @@map("user")
 }
@@ -34,8 +33,8 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("session")
   @@index([userId])
+  @@map("session")
 }
 
 model Account {
@@ -49,14 +48,14 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
-  issuer                String?
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  issuer                String?
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("account")
   @@index([userId])
+  @@map("account")
 }
 
 model Verification {
@@ -67,64 +66,55 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 
-  @@map("verification")
   @@index([identifier])
+  @@map("verification")
 }
 
 model Workflow {
-  id   String @id @default(cuid())
-  name String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  nodes Node[]
+  id          String       @id @default(cuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userId      String
   connections Connection[]
-
-  userId String
-  user User @relation(fields:[userId] , references : [id] , onDelete : Cascade)
+  nodes       Node[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-enum NodeType{
+model Node {
+  id                String       @id @default(cuid())
+  workflowId        String
+  name              String
+  type              NodeType
+  position          Json
+  data              Json         @default("{}")
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  outputConnections Connection[] @relation("FromNode")
+  inputConnections  Connection[] @relation("ToNode")
+  workflow          Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+}
+
+model Connection {
+  id         String   @id @default(cuid())
+  workflowId String
+  fromNodeId String
+  toNodeId   String
+  fromOutput String   @default("main")
+  toInput    String   @default("main")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  fromNode   Node     @relation("FromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode     Node     @relation("ToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([fromNodeId, toNodeId, fromOutput, toInput])
+}
+
+enum NodeType {
   INITIAL
   MANUAL_TRIGGER
   HTTP_REQUEST
   GOOGLE_FORM_TRIGGER
-}
-
-model Node {
-  id   String @id @default(cuid())
-
-  workflowId String
-  workflow Workflow @relation(fields:[workflowId] , references:[id],onDelete: Cascade)
-
-  name String
-  type NodeType
-  position Json
-  data Json @default("{}")
-
-  outputConnections Connection[] @relation("FromNode")
-  inputConnections Connection[] @relation("ToNode")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Connection {
-  id   String @id @default(cuid())
-
-  workflowId String
-  workflow Workflow @relation(fields:[workflowId] , references:[id],onDelete: Cascade)
-
-  fromNodeId String
-  fromNode Node @relation("FromNode" , fields: [fromNodeId],references: [id],onDelete: Cascade) 
-  toNodeId String
-  toNode Node @relation("ToNode" , fields: [toNodeId],references: [id],onDelete: Cascade) 
-
-  fromOutput String @default("main")
-  toInput String @default("main")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([fromNodeId,toNodeId,fromOutput,toInput])
+  STRIPE_TRIGGER
 }
