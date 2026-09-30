@@ -7,7 +7,7 @@ import { useSuspenseWorkflow } from "@/features/workflows/hooks/use-workflows";
 
 import { ErrorView, LoadingView } from "@/components/entity-components";
 import '@xyflow/react/dist/style.css';
-import { NodeComponents } from '@/config/node-components';
+import { nodeComponents } from '@/config/node-components';
 import { AddNodeButton } from './add-node-button';
 import { useSetAtom } from 'jotai';
 import { editorAtom } from '../store/atoms';
@@ -55,7 +55,7 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
         panOnScroll
         panOnDrag={false}
         selectionOnDrag
-        nodeTypes={NodeComponents}//
+        nodeTypes={nodeComponents}//
         proOptions={{//
           hideAttribution:true
         }}
