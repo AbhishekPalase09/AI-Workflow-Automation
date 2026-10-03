@@ -23,6 +23,7 @@ type OpenAiData = {
 export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
   data,
   nodeId,
+  userId,
   context,
   step,
   publish,
@@ -61,7 +62,7 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
         status: "error",
       }),
     );
-    throw new NonRetriableError("Gemini node: Credential is required");
+    throw new NonRetriableError("OpenAi node: Credential is required");
   }
 
   const systemPrompt = data.systemPrompt
@@ -73,12 +74,19 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
     return prisma.credential.findUnique({
       where: {
         id: data.credentialId,
+        userId,
       },
     });
   });
 
   if (!credential) {
     throw new NonRetriableError("OpenAI node: Credential not found");
+    await publish(
+      openAiChannel().status({
+        nodeId,
+        status: "error",
+      })
+    );
   }
 
   const openai = createOpenAI({
