@@ -11,6 +11,7 @@ import { discordExecutor } from "../components/discord/executor";
 import { slackExecutor } from "../components/slack/executor";
 import { emailExecutor } from "../components/email/executor";
 import { fileGeneratorExecutor } from "../components/file-generator/executor";
+import { telegramExecutor } from "../components/telegram/executor";
 
 export const executorRegistry: Record<NodeType, NodeExecutor<any>> = {
   [NodeType.INITIAL]: manualTriggerExecutor,
@@ -25,6 +26,7 @@ export const executorRegistry: Record<NodeType, NodeExecutor<any>> = {
   [NodeType.SLACK]: slackExecutor,
   [NodeType.EMAIL]: emailExecutor,
   [NodeType.FILE_GENERATOR]: fileGeneratorExecutor,
+  [NodeType.TELEGRAM]: telegramExecutor,
 };
 
 export const getExecutor = (type: NodeType): NodeExecutor<any> => {

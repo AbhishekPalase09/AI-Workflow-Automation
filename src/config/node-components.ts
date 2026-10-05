@@ -13,6 +13,7 @@ import { DiscordNode } from "@/features/executions/components/discord/node";
 import { SlackNode } from "@/features/executions/components/slack/node";
 import { EmailNode } from "@/features/executions/components/email/node";
 import { FileGeneratorNode } from "@/features/executions/components/file-generator/node";
+import { TelegramNode } from "@/features/executions/components/telegram/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -27,6 +28,7 @@ export const nodeComponents = {
   [NodeType.SLACK]: SlackNode,
   [NodeType.EMAIL]: EmailNode,
   [NodeType.FILE_GENERATOR]: FileGeneratorNode,
+  [NodeType.TELEGRAM]: TelegramNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;

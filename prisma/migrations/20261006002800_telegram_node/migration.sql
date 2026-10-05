@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "CredentialType" ADD VALUE 'TELEGRAM';
+ALTER TYPE "NodeType" ADD VALUE 'TELEGRAM';

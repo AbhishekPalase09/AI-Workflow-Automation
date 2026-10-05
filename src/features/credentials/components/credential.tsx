@@ -67,6 +67,11 @@ const credentialTypeOptions = [
     label: "Resend",
     logo: "/logos/resend.svg",
   },
+  {
+    value: CredentialType.TELEGRAM,
+    label: "Telegram Bot Token",
+    logo: "/logos/telegram.svg",
+  },
 ];
 
 interface CredentialFormProps {

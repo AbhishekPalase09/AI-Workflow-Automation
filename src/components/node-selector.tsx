@@ -96,6 +96,12 @@ const executionNodes: NodeTypeOption[] = [
     description: "Export CSV, JSON, Markdown, HTML or Plain Text files",
     icon: "/logos/file-generator.svg",
   },
+  {
+    type: NodeType.TELEGRAM,
+    label: "Telegram",
+    description: "Send a message to a Telegram chat or channel",
+    icon: "/logos/telegram.svg",
+  },
 ];
 
 

@@ -90,6 +90,7 @@ enum CredentialType {
   ANTHROPIC
   GEMINI
   RESEND
+  TELEGRAM
 }
 
 
@@ -151,4 +152,5 @@ enum NodeType {
   SLACK
   EMAIL
   FILE_GENERATOR
+  TELEGRAM
 }
