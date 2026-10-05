@@ -62,6 +62,21 @@ const credentialTypeOptions = [
     label: "Gemini",
     logo: "/logos/gemini.svg",
   },
+  {
+    value: CredentialType.RESEND,
+    label: "Resend",
+    logo: "/logos/resend.svg",
+  },
+  {
+    value: CredentialType.TELEGRAM,
+    label: "Telegram Bot Token",
+    logo: "/logos/telegram.svg",
+  },
+  {
+    value: CredentialType.DATABASE,
+    label: "Database (PostgreSQL URL)",
+    logo: "/logos/database.svg",
+  },
 ];
 
 interface CredentialFormProps {
@@ -91,6 +106,8 @@ export const CredentialForm = ({
       value: "",
     },
   });
+
+  const selectedType = form.watch("type");
 
   const onSubmit = async (values: FormValues) => {
     if (isEdit && initialData?.id) {
@@ -184,11 +201,21 @@ export const CredentialForm = ({
                   name="value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>API Key</FormLabel>
+                      <FormLabel>
+                        {selectedType === CredentialType.DATABASE
+                          ? "Database Connection URL"
+                          : selectedType === CredentialType.TELEGRAM
+                          ? "Telegram Bot Token"
+                          : "API Key"}
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder="sk-..."
+                          placeholder={
+                            selectedType === CredentialType.DATABASE
+                              ? "postgresql://user:password@host:5432/dbname?sslmode=require"
+                              : "sk-..."
+                          }
                           {...field}
                         />
                       </FormControl>

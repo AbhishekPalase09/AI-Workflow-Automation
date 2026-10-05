@@ -45,6 +45,12 @@ const triggerNodes: NodeTypeOption[] = [
     description: "Runs the flow when a Stripe Event is captured",
     icon: "/logos/stripe.svg",
   },
+  {
+    type: NodeType.TELEGRAM_TRIGGER,
+    label: "Telegram Message",
+    description: "Runs the flow when a message is received by your Telegram Bot",
+    icon: "/logos/telegram.svg",
+  },
 ];
 
 const executionNodes: NodeTypeOption[] = [
@@ -83,6 +89,30 @@ const executionNodes: NodeTypeOption[] = [
     label: "Slack",
     description: "Send a message to Slack",
     icon: "/logos/slack.svg",
+  },
+  {
+    type: NodeType.EMAIL,
+    label: "Email (Resend)",
+    description: "Send an email with custom HTML & variables",
+    icon: "/logos/email.svg",
+  },
+  {
+    type: NodeType.FILE_GENERATOR,
+    label: "File Generator",
+    description: "Export CSV, JSON, Markdown, HTML or Plain Text files",
+    icon: "/logos/file-generator.svg",
+  },
+  {
+    type: NodeType.TELEGRAM,
+    label: "Telegram",
+    description: "Send a message to a Telegram chat or channel",
+    icon: "/logos/telegram.svg",
+  },
+  {
+    type: NodeType.DATABASE,
+    label: "Database (PostgreSQL)",
+    description: "Execute SQL queries on any Postgres database",
+    icon: "/logos/database.svg",
   },
 ];
 

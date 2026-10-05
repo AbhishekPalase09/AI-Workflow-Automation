@@ -4,11 +4,16 @@ import { manualTriggerExecutor } from "@/features/triggers/components/manual-tri
 import { httpRequestExecutor } from "../components/http-request/executor";
 import { googleFormTriggerExecutor } from "@/features/triggers/components/google-form-trigger/executor";
 import { stripeTriggerExecutor } from "@/features/triggers/components/stripe-trigger/executor";
+import { telegramTriggerExecutor } from "@/features/triggers/components/telegram-trigger/executor";
 import { geminiExecutor } from "../components/gemini/executor";
 import { openAiExecutor } from "../components/openai/executor";
 import { anthropicExecutor } from "../components/anthropic/executor";
 import { discordExecutor } from "../components/discord/executor";
 import { slackExecutor } from "../components/slack/executor";
+import { emailExecutor } from "../components/email/executor";
+import { fileGeneratorExecutor } from "../components/file-generator/executor";
+import { telegramExecutor } from "../components/telegram/executor";
+import { databaseExecutor } from "../components/database/executor";
 
 export const executorRegistry: Record<NodeType, NodeExecutor<any>> = {
   [NodeType.INITIAL]: manualTriggerExecutor,
@@ -16,11 +21,16 @@ export const executorRegistry: Record<NodeType, NodeExecutor<any>> = {
   [NodeType.HTTP_REQUEST]: httpRequestExecutor,
   [NodeType.GOOGLE_FORM_TRIGGER]: googleFormTriggerExecutor,
   [NodeType.STRIPE_TRIGGER]: stripeTriggerExecutor,
+  [NodeType.TELEGRAM_TRIGGER]: telegramTriggerExecutor,
   [NodeType.GEMINI]: geminiExecutor,
   [NodeType.ANTHROPIC]: anthropicExecutor,
   [NodeType.OPENAI]: openAiExecutor,
   [NodeType.DISCORD]: discordExecutor,
   [NodeType.SLACK]: slackExecutor,
+  [NodeType.EMAIL]: emailExecutor,
+  [NodeType.FILE_GENERATOR]: fileGeneratorExecutor,
+  [NodeType.TELEGRAM]: telegramExecutor,
+  [NodeType.DATABASE]: databaseExecutor,
 };
 
 export const getExecutor = (type: NodeType): NodeExecutor<any> => {

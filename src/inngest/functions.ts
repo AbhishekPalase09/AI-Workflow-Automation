@@ -1,18 +1,23 @@
 import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
-import { topologicalSort } from "./utils";
+import { topologicalSort, getTriggerReachableNodes } from "./utils";
 import { NodeType } from "@/generated/prisma";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
 import { httpRequestChannel } from "./channels/http-request";
 import { manualTriggerChannel } from "./channels/manual-trigger";
 import { googleFormTriggerChannel } from "./channels/google-form-trigger";
 import { stripeTriggerChannel } from "./channels/stripe-trigger";
+import { telegramTriggerChannel } from "./channels/telegram-trigger";
 import { geminiChannel } from "./channels/gemini";
 import { openAiChannel } from "./channels/openai";
 import { anthropicChannel } from "./channels/anthropic";
 import { discordChannel } from "./channels/discord";
 import { slackChannel } from "./channels/slack";
+import { emailChannel } from "./channels/email";
+import { fileGeneratorChannel } from "./channels/file-generator";
+import { telegramChannel } from "./channels/telegram";
+import { databaseChannel } from "./channels/database";
 
 export const executeWorkflow = inngest.createFunction(
   { 
@@ -26,11 +31,16 @@ export const executeWorkflow = inngest.createFunction(
       manualTriggerChannel(),
       googleFormTriggerChannel(),
       stripeTriggerChannel(),
+      telegramTriggerChannel(),
       geminiChannel(),
       openAiChannel(),
       anthropicChannel(),
       discordChannel(),
       slackChannel(),
+      emailChannel(),
+      fileGeneratorChannel(),
+      telegramChannel(),
+      databaseChannel(),
     ],
   },
   async ({ event, step, publish }) => {
@@ -49,7 +59,18 @@ export const executeWorkflow = inngest.createFunction(
         },
       });
 
-      return topologicalSort(workflow.nodes, workflow.connections);
+      const triggerType =
+        event.data.triggerType ||
+        (event.data.initialData?.telegram ? NodeType.TELEGRAM_TRIGGER : undefined) ||
+        (event.data.initialData?.googleForm ? NodeType.GOOGLE_FORM_TRIGGER : undefined) ||
+        (event.data.initialData?.stripe ? NodeType.STRIPE_TRIGGER : undefined);
+
+      return getTriggerReachableNodes(
+        workflow.nodes,
+        workflow.connections,
+        triggerType,
+        event.data.triggerNodeId,
+      );
     });
 
     const userId = await step.run("find-user-id", async () => {

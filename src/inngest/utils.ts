@@ -51,6 +51,59 @@ export const topologicalSort = (
   return sortedNodeIds.map((id) => nodeMap.get(id)!).filter(Boolean);
 };
 
+export const getTriggerReachableNodes = (
+  nodes: Node[],
+  connections: Connection[],
+  triggerType?: string,
+  triggerNodeId?: string,
+): Node[] => {
+  let startNode: Node | undefined;
+
+  if (triggerNodeId) {
+    startNode = nodes.find((n) => n.id === triggerNodeId);
+  }
+
+  if (!startNode && triggerType) {
+    startNode = nodes.find((n) => n.type === triggerType);
+  }
+
+  // If no specific trigger was identified, run standard toposort for all nodes
+  if (!startNode) {
+    return topologicalSort(nodes, connections);
+  }
+
+  // Build adjacency list for forward traversal
+  const adjacency = new Map<string, string[]>();
+  for (const conn of connections) {
+    const list = adjacency.get(conn.fromNodeId) || [];
+    list.push(conn.toNodeId);
+    adjacency.set(conn.fromNodeId, list);
+  }
+
+  // Traverse to find all downstream nodes reachable from the trigger
+  const reachableIds = new Set<string>();
+  const queue = [startNode.id];
+  reachableIds.add(startNode.id);
+
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+    const neighbors = adjacency.get(currentId) || [];
+    for (const nextId of neighbors) {
+      if (!reachableIds.has(nextId)) {
+        reachableIds.add(nextId);
+        queue.push(nextId);
+      }
+    }
+  }
+
+  const reachableNodes = nodes.filter((n) => reachableIds.has(n.id));
+  const reachableConnections = connections.filter(
+    (c) => reachableIds.has(c.fromNodeId) && reachableIds.has(c.toNodeId),
+  );
+
+  return topologicalSort(reachableNodes, reachableConnections);
+};
+
 export const sendWorkflowExecution = async (data: {
     workflowId: string;
     [key: string]: any;

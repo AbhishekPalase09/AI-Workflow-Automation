@@ -8,17 +8,17 @@ import { WorkflowNode } from "./workflow-node";
 import { NodeSelector } from "./node-selector";
 
 export const InitialNode = memo((props: NodeProps) => {
-   const [selectorOpen , setSelectorOpen] =useState(false);
+  const [selectorOpen, setSelectorOpen] = useState(false);
   return (
     <NodeSelector open={selectorOpen} onOpenChange={setSelectorOpen}>
-      <WorkflowNode 
+      <WorkflowNode
         showToolbar={false}
       >
         <PlaceholderNode
           {...props}
-          onClick={()=>setSelectorOpen(true)}
+          onClick={() => setSelectorOpen(true)}
         >
-<div className="cursor-pointer flex items-center justify-center">            <PlusIcon className="size-4" />
+          <div className="cursor-pointer flex items-center justify-center">            <PlusIcon className="size-4" />
           </div>
         </PlaceholderNode>
       </WorkflowNode>
