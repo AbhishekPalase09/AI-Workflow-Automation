@@ -1,5 +1,6 @@
 import { sendWorkflowExecution } from "@/inngest/utils";
 import { type NextRequest, NextResponse } from "next/server";
+import { NodeType } from "@/generated/prisma";
 
 export async function POST(request: NextRequest) {
     try{
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
 
         await sendWorkflowExecution({
             workflowId,
+            triggerType: NodeType.GOOGLE_FORM_TRIGGER,
             initialData: {
                 googleForm: formData,
             },

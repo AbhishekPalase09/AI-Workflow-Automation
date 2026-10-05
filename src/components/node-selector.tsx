@@ -45,6 +45,12 @@ const triggerNodes: NodeTypeOption[] = [
     description: "Runs the flow when a Stripe Event is captured",
     icon: "/logos/stripe.svg",
   },
+  {
+    type: NodeType.TELEGRAM_TRIGGER,
+    label: "Telegram Message",
+    description: "Runs the flow when a message is received by your Telegram Bot",
+    icon: "/logos/telegram.svg",
+  },
 ];
 
 const executionNodes: NodeTypeOption[] = [
@@ -101,6 +107,12 @@ const executionNodes: NodeTypeOption[] = [
     label: "Telegram",
     description: "Send a message to a Telegram chat or channel",
     icon: "/logos/telegram.svg",
+  },
+  {
+    type: NodeType.DATABASE,
+    label: "Database (PostgreSQL)",
+    description: "Execute SQL queries on any Postgres database",
+    icon: "/logos/database.svg",
   },
 ];
 

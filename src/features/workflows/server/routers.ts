@@ -23,8 +23,9 @@ export const workflowRouter = createTRPCRouter({
             });
 
             await sendWorkflowExecution({
-                workflowId :input.id,
-            })
+                workflowId: input.id,
+                triggerType: NodeType.MANUAL_TRIGGER,
+            });
 
             return workflow;
         }),

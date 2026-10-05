@@ -6,6 +6,7 @@ import { HttpRequestNode } from "@/features/executions/components/http-request/n
 import { ManualTriggerNode } from "@/features/triggers/components/manual-trigger/node";
 import { GoogleFormTrigger } from "@/features/triggers/components/google-form-trigger/node";
 import { StripeTriggerNode } from "@/features/triggers/components/stripe-trigger/node";
+import { TelegramTrigger } from "@/features/triggers/components/telegram-trigger/node";
 import { GeminiNode } from "@/features/executions/components/gemini/node";
 import { OpenAiNode } from "@/features/executions/components/openai/node";
 import { AnthropicNode } from "@/features/executions/components/anthropic/node";
@@ -14,6 +15,7 @@ import { SlackNode } from "@/features/executions/components/slack/node";
 import { EmailNode } from "@/features/executions/components/email/node";
 import { FileGeneratorNode } from "@/features/executions/components/file-generator/node";
 import { TelegramNode } from "@/features/executions/components/telegram/node";
+import { DatabaseNode } from "@/features/executions/components/database/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -21,6 +23,7 @@ export const nodeComponents = {
   [NodeType.MANUAL_TRIGGER]: ManualTriggerNode,
   [NodeType.GOOGLE_FORM_TRIGGER]: GoogleFormTrigger,
   [NodeType.STRIPE_TRIGGER]: StripeTriggerNode,
+  [NodeType.TELEGRAM_TRIGGER]: TelegramTrigger,
   [NodeType.GEMINI]: GeminiNode,
   [NodeType.OPENAI]: OpenAiNode,
   [NodeType.ANTHROPIC]: AnthropicNode,
@@ -29,6 +32,7 @@ export const nodeComponents = {
   [NodeType.EMAIL]: EmailNode,
   [NodeType.FILE_GENERATOR]: FileGeneratorNode,
   [NodeType.TELEGRAM]: TelegramNode,
+  [NodeType.DATABASE]: DatabaseNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;

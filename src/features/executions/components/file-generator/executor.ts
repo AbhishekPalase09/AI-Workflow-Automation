@@ -108,26 +108,49 @@ export const fileGeneratorExecutor: NodeExecutor<FileGeneratorData> = async ({
       const rawFilename = Handlebars.compile(data.filename)(context);
       const filename = decode(rawFilename).trim();
 
-      const rawContent = Handlebars.compile(data.content)(context);
-      let content = decode(rawContent);
+      // Check if data.content directly references an array variable, e.g. {{dbRetrive.rows}} or {{json dbRetrive.rows}}
+      let content = "";
+      const trimmed = data.content?.trim() || "";
+      const varMatch = trimmed.match(/^\{{2,3}\s*(?:json\s+)?([a-zA-Z0-9_$.]+)\s*\}{2,3}$/);
+      let rawArray: Record<string, unknown>[] | undefined;
 
-      // Format-specific transformations
-      if (format === "CSV") {
-        // Try parsing JSON array from content if applicable
-        try {
-          const parsed = JSON.parse(content);
-          if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
-            content = convertArrayToCsv(parsed);
-          }
-        } catch {
-          // If not raw JSON array, keep the templated CSV text
+      if (varMatch) {
+        const path = varMatch[1].split(".");
+        let curr: any = context;
+        for (const p of path) {
+          curr = curr?.[p];
         }
-      } else if (format === "JSON") {
-        try {
-          const parsed = JSON.parse(content);
-          content = JSON.stringify(parsed, null, 2);
-        } catch {
-          // Keep raw if already string or custom template
+        if (Array.isArray(curr)) {
+          rawArray = curr as Record<string, unknown>[];
+        }
+      }
+
+      if (rawArray && format === "CSV") {
+        content = convertArrayToCsv(rawArray);
+      } else if (rawArray && format === "JSON") {
+        content = JSON.stringify(rawArray, null, 2);
+      } else {
+        const rawContent = Handlebars.compile(data.content)(context);
+        content = decode(rawContent);
+
+        // Format-specific transformations
+        if (format === "CSV") {
+          // Try parsing JSON array from content if applicable
+          try {
+            const parsed = JSON.parse(content);
+            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
+              content = convertArrayToCsv(parsed);
+            }
+          } catch {
+            // If not raw JSON array, keep the templated CSV text
+          }
+        } else if (format === "JSON") {
+          try {
+            const parsed = JSON.parse(content);
+            content = JSON.stringify(parsed, null, 2);
+          } catch {
+            // Keep raw if already string or custom template
+          }
         }
       }
 

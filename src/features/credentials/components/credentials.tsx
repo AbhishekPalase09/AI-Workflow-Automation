@@ -120,6 +120,7 @@ const credentialLogos: Record<CredentialType, string> = {
   [CredentialType.GEMINI]: "/logos/gemini.svg",
   [CredentialType.RESEND]: "/logos/resend.svg",
   [CredentialType.TELEGRAM]: "/logos/telegram.svg",
+  [CredentialType.DATABASE]: "/logos/database.svg",
 };
 
 export const CredentialItem = ({
