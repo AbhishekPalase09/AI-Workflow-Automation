@@ -62,6 +62,11 @@ const credentialTypeOptions = [
     label: "Gemini",
     logo: "/logos/gemini.svg",
   },
+  {
+    value: CredentialType.RESEND,
+    label: "Resend",
+    logo: "/logos/resend.svg",
+  },
 ];
 
 interface CredentialFormProps {

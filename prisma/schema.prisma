@@ -89,6 +89,7 @@ enum CredentialType {
   OPENAI
   ANTHROPIC
   GEMINI
+  RESEND
 }
 
 
@@ -148,4 +149,5 @@ enum NodeType {
   OPENAI
   DISCORD
   SLACK
+  EMAIL
 }

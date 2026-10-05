@@ -84,6 +84,12 @@ const executionNodes: NodeTypeOption[] = [
     description: "Send a message to Slack",
     icon: "/logos/slack.svg",
   },
+  {
+    type: NodeType.EMAIL,
+    label: "Email (Resend)",
+    description: "Send an email with custom HTML & variables",
+    icon: "/logos/email.svg",
+  },
 ];
 
 
