@@ -150,4 +150,5 @@ enum NodeType {
   DISCORD
   SLACK
   EMAIL
+  FILE_GENERATOR
 }

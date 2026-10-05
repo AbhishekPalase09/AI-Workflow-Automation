@@ -90,6 +90,12 @@ const executionNodes: NodeTypeOption[] = [
     description: "Send an email with custom HTML & variables",
     icon: "/logos/email.svg",
   },
+  {
+    type: NodeType.FILE_GENERATOR,
+    label: "File Generator",
+    description: "Export CSV, JSON, Markdown, HTML or Plain Text files",
+    icon: "/logos/file-generator.svg",
+  },
 ];
 
 

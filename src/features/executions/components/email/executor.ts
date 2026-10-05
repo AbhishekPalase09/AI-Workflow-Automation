@@ -20,6 +20,7 @@ type EmailData = {
   to?: string;
   subject?: string;
   body?: string;
+  attachmentVariableName?: string;
 };
 
 export const emailExecutor: NodeExecutor<EmailData> = async ({
@@ -116,6 +117,24 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
     });
 
     const result = await step.run("send-email", async () => {
+      let attachments: Array<{ filename: string; content: string }> | undefined;
+      if (data.attachmentVariableName) {
+        const cleanVar = data.attachmentVariableName.replace(/[{}]/g, "").trim();
+        const attached = context[cleanVar] as
+          | { filename?: string; content?: string; base64?: string }
+          | undefined;
+        if (attached && (attached.base64 || attached.content)) {
+          attachments = [
+            {
+              filename: attached.filename || "attachment.csv",
+              content:
+                attached.base64 ||
+                Buffer.from(attached.content || "").toString("base64"),
+            },
+          ];
+        }
+      }
+
       const response = await ky
         .post("https://api.resend.com/emails", {
           headers: {
@@ -127,6 +146,7 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
             to: to.includes(",") ? to.split(",").map((e) => e.trim()) : [to],
             subject,
             html: body,
+            ...(attachments ? { attachments } : {}),
           },
         })
         .json<{ id: string }>();
@@ -138,6 +158,7 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
           to,
           from,
           subject,
+          hasAttachment: !!attachments?.length,
         },
       };
     });

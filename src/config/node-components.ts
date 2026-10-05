@@ -12,6 +12,7 @@ import { AnthropicNode } from "@/features/executions/components/anthropic/node";
 import { DiscordNode } from "@/features/executions/components/discord/node";
 import { SlackNode } from "@/features/executions/components/slack/node";
 import { EmailNode } from "@/features/executions/components/email/node";
+import { FileGeneratorNode } from "@/features/executions/components/file-generator/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -25,6 +26,7 @@ export const nodeComponents = {
   [NodeType.DISCORD]: DiscordNode,
   [NodeType.SLACK]: SlackNode,
   [NodeType.EMAIL]: EmailNode,
+  [NodeType.FILE_GENERATOR]: FileGeneratorNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;

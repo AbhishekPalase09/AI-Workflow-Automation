@@ -10,6 +10,7 @@ import { anthropicExecutor } from "../components/anthropic/executor";
 import { discordExecutor } from "../components/discord/executor";
 import { slackExecutor } from "../components/slack/executor";
 import { emailExecutor } from "../components/email/executor";
+import { fileGeneratorExecutor } from "../components/file-generator/executor";
 
 export const executorRegistry: Record<NodeType, NodeExecutor<any>> = {
   [NodeType.INITIAL]: manualTriggerExecutor,
@@ -23,6 +24,7 @@ export const executorRegistry: Record<NodeType, NodeExecutor<any>> = {
   [NodeType.DISCORD]: discordExecutor,
   [NodeType.SLACK]: slackExecutor,
   [NodeType.EMAIL]: emailExecutor,
+  [NodeType.FILE_GENERATOR]: fileGeneratorExecutor,
 };
 
 export const getExecutor = (type: NodeType): NodeExecutor<any> => {

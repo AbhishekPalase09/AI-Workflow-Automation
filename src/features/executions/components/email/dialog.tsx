@@ -47,6 +47,7 @@ const formSchema = z.object({
   to: z.string().min(1, "Recipient email is required"),
   subject: z.string().min(1, "Subject is required"),
   body: z.string().min(1, "Email body content is required"),
+  attachmentVariableName: z.string().optional(),
 });
 
 export type EmailFormValues = z.infer<typeof formSchema>;
@@ -78,6 +79,7 @@ export const EmailDialog = ({
       to: defaultValues.to || "",
       subject: defaultValues.subject || "",
       body: defaultValues.body || "",
+      attachmentVariableName: defaultValues.attachmentVariableName || "",
     },
   });
 
@@ -91,6 +93,7 @@ export const EmailDialog = ({
         to: defaultValues.to || "",
         subject: defaultValues.subject || "",
         body: defaultValues.body || "",
+        attachmentVariableName: defaultValues.attachmentVariableName || "",
       });
     }
   }, [open, defaultValues, form]);
@@ -255,6 +258,26 @@ export const EmailDialog = ({
                   </FormControl>
                   <FormDescription>
                     Email body content. Supports HTML and {"{{variables}}"}.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="attachmentVariableName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>File Attachment Variable (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="myReport or {{myReport}}"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Variable name from a File Generator node (e.g. &apos;myReport&apos;) to attach to this email.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

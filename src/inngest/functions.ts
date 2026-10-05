@@ -14,6 +14,7 @@ import { anthropicChannel } from "./channels/anthropic";
 import { discordChannel } from "./channels/discord";
 import { slackChannel } from "./channels/slack";
 import { emailChannel } from "./channels/email";
+import { fileGeneratorChannel } from "./channels/file-generator";
 
 export const executeWorkflow = inngest.createFunction(
   { 
@@ -33,6 +34,7 @@ export const executeWorkflow = inngest.createFunction(
       discordChannel(),
       slackChannel(),
       emailChannel(),
+      fileGeneratorChannel(),
     ],
   },
   async ({ event, step, publish }) => {
