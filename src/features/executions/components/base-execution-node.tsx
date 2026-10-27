@@ -4,10 +4,13 @@ import { type NodeProps, Position, useReactFlow } from "@xyflow/react";
 import type { LucideIcon } from "lucide-react";
 import Image from "next/image";
 import { memo, type ReactNode } from "react";
-import { BaseNode, BaseNodeContent } from "@/components/react-flow/base-node";
 import { BaseHandle } from "@/components/react-flow/base-handle";
+import { BaseNode, BaseNodeContent } from "@/components/react-flow/base-node";
+import {
+  type NodeStatus,
+  NodeStatusIndicator,
+} from "@/components/react-flow/node-status-indicator";
 import { WorkflowNode } from "@/components/workflow-node";
-import { type NodeStatus, NodeStatusIndicator } from "@/components/react-flow/node-status-indicator";
 
 interface BaseExecutionNodeProps extends NodeProps {
   icon: LucideIcon | string;
@@ -17,7 +20,9 @@ interface BaseExecutionNodeProps extends NodeProps {
   status?: NodeStatus;
   onSettings?: () => void;
   onDoubleClick?: () => void;
-};
+}
+
+import { NodeDiagnosticsBadge } from "@/features/editor/components/node-diagnostics-badge";
 
 export const BaseExecutionNode = memo(
   ({
@@ -26,25 +31,25 @@ export const BaseExecutionNode = memo(
     name,
     description,
     children,
-    status="initial",
+    status = "initial",
     onSettings,
     onDoubleClick,
   }: BaseExecutionNodeProps) => {
     // TODO: add delete method
-        const {setNodes,setEdges} = useReactFlow();
-    
+    const { setNodes, setEdges } = useReactFlow();
 
-     const handleDelete = () => {
+    const handleDelete = () => {
       setNodes((currentNodes) => {
-        const updatedNodes = currentNodes.filter((node)=> node.id !==id)
-        return updatedNodes 
+        const updatedNodes = currentNodes.filter((node) => node.id !== id);
+        return updatedNodes;
       });
 
       setEdges((currentEdges) => {
-        const updatedEdges = currentEdges.filter((edge)=> edge.source !==id && edge.target!==id)
-        return updatedEdges 
+        const updatedEdges = currentEdges.filter(
+          (edge) => edge.source !== id && edge.target !== id,
+        );
+        return updatedEdges;
       });
-
     };
 
     return (
@@ -54,7 +59,12 @@ export const BaseExecutionNode = memo(
         onDelete={handleDelete}
         onSettings={onSettings}
       >
-        <NodeStatusIndicator status={status} variant="border" >
+        <NodeStatusIndicator
+          status={status}
+          variant="border"
+          className="relative"
+        >
+          <NodeDiagnosticsBadge nodeId={id} />
           <BaseNode status={status} onDoubleClick={onDoubleClick}>
             <BaseNodeContent>
               {typeof Icon === "string" ? (
@@ -77,7 +87,7 @@ export const BaseExecutionNode = memo(
           </BaseNode>
         </NodeStatusIndicator>
       </WorkflowNode>
-    )
+    );
   },
 );
 

@@ -1,12 +1,12 @@
 "use client";
 
-import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
+import { type Node, type NodeProps, useReactFlow } from "@xyflow/react";
 import { memo, useState } from "react";
-import { BaseExecutionNode } from "../base-execution-node";
-import { EmailDialog, EmailFormValues } from "./dialog";
-import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchEmailRealtimeToken } from "./actions";
 import { EMAIL_CHANNEL_NAME } from "@/inngest/channels/email";
+import { useNodeStatus } from "../../hooks/use-node-status";
+import { BaseExecutionNode } from "../base-execution-node";
+import { fetchEmailRealtimeToken } from "./actions";
+import { EmailDialog, type EmailFormValues } from "./dialog";
 
 type EmailNodeData = {
   variableName?: string;
@@ -57,6 +57,7 @@ export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
   return (
     <>
       <EmailDialog
+        nodeId={props.id}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}

@@ -1,21 +1,26 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { 
+import {
+  CheckCircle2Icon,
+  ClockIcon,
+  Loader2Icon,
+  XCircleIcon,
+} from "lucide-react";
+import {
   EmptyView,
-  EntityContainer, 
-  EntityHeader, 
-  EntityItem, 
-  EntityList, 
-  EntityPagination, 
+  EntityContainer,
+  EntityHeader,
+  EntityItem,
+  EntityList,
+  EntityPagination,
   ErrorView,
-  LoadingView
+  LoadingView,
 } from "@/components/entity-components";
-import { useSuspenseExecutions } from "../hooks/use-executions"
-import { useExecutionsParams } from "../hooks/use-executions-params";
 import type { Execution } from "@/generated/prisma";
 import { ExecutionStatus } from "@/generated/prisma";
-import { CheckCircle2Icon, ClockIcon, Loader2Icon, XCircleIcon } from "lucide-react";
+import { useSuspenseExecutions } from "../hooks/use-executions";
+import { useExecutionsParams } from "../hooks/use-executions-params";
 
 export const ExecutionsList = () => {
   const executions = useSuspenseExecutions();
@@ -54,7 +59,7 @@ export const ExecutionsPagination = () => {
 };
 
 export const ExecutionsContainer = ({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) => {
@@ -78,9 +83,7 @@ export const ExecutionsError = () => {
 
 export const ExecutionsEmpty = () => {
   return (
-    <EmptyView
-      message="You haven't created any executions yet. Get started by running your first workflow"
-    />
+    <EmptyView message="You haven't created any executions yet. Get started by running your first workflow" />
   );
 };
 
@@ -95,7 +98,7 @@ const getStatusIcon = (status: ExecutionStatus) => {
     default:
       return <ClockIcon className="size-5 text-muted-foreground" />;
   }
-}
+};
 
 const formatStatus = (status: ExecutionStatus) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
@@ -103,7 +106,7 @@ const formatStatus = (status: ExecutionStatus) => {
 
 export const ExecutionItem = ({
   data,
-}: { 
+}: {
   data: Execution & {
     workflow: {
       id: string;
@@ -113,8 +116,10 @@ export const ExecutionItem = ({
 }) => {
   const duration = data.completedAt
     ? Math.round(
-      (new Date(data.completedAt).getTime() - new Date(data.startedAt).getTime()) / 1000,
-    )
+        (new Date(data.completedAt).getTime() -
+          new Date(data.startedAt).getTime()) /
+          1000,
+      )
     : null;
 
   const subtitle = (
@@ -136,5 +141,5 @@ export const ExecutionItem = ({
         </div>
       }
     />
-  )
+  );
 };

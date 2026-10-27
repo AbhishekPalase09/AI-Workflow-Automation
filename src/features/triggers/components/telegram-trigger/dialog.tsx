@@ -18,7 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CopyIcon, CheckCircle2Icon, Loader2Icon, SendIcon, SaveIcon } from "lucide-react";
+import {
+  CopyIcon,
+  CheckCircle2Icon,
+  Loader2Icon,
+  SendIcon,
+  SaveIcon,
+} from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -134,7 +140,8 @@ export const TelegramTriggerDialog = ({
             Telegram Trigger Configuration
           </DialogTitle>
           <DialogDescription>
-            Triggers this workflow automatically when a user sends a message or command to your Telegram Bot.
+            Triggers this workflow automatically when a user sends a message or
+            command to your Telegram Bot.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-5">
@@ -148,8 +155,9 @@ export const TelegramTriggerDialog = ({
               className="font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground">
-              Only trigger when the message starts with this command (e.g. <code>/summary</code>). 
-              Leave blank to trigger on all messages. (Ignores <code>/start</code> when set to <code>/summary</code>).
+              Only trigger when the message starts with this command (e.g.{" "}
+              <code>/summary</code>). Leave blank to trigger on all messages.
+              (Ignores <code>/start</code> when set to <code>/summary</code>).
             </p>
           </div>
 
@@ -172,7 +180,8 @@ export const TelegramTriggerDialog = ({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Telegram sends updates to this endpoint whenever someone messages your bot.
+              Telegram sends updates to this endpoint whenever someone messages
+              your bot.
             </p>
           </div>
 
@@ -182,7 +191,8 @@ export const TelegramTriggerDialog = ({
               1-Click Webhook Registration
             </h4>
             <p className="text-xs text-muted-foreground">
-              Register this webhook URL directly with Telegram using your Bot Token.
+              Register this webhook URL directly with Telegram using your Bot
+              Token.
             </p>
 
             {credentials && credentials.length > 0 && (
@@ -274,7 +284,8 @@ export const TelegramTriggerDialog = ({
                 <code className="bg-background px-1 py-0.5 rounded text-foreground font-mono">
                   {"{{telegram.chatType}}"}
                 </code>{" "}
-                - Chat type (<code>private</code>, <code>group</code>, <code>channel</code>)
+                - Chat type (<code>private</code>, <code>group</code>,{" "}
+                <code>channel</code>)
               </li>
               <li>
                 <code className="bg-background px-1 py-0.5 rounded text-foreground font-mono">
@@ -287,7 +298,11 @@ export const TelegramTriggerDialog = ({
         </div>
 
         <DialogFooter className="mt-4 flex gap-2">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Close
           </Button>
           <Button type="button" onClick={handleSaveOnly}>

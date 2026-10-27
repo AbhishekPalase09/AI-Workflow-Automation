@@ -43,7 +43,12 @@ function escapeCsvValue(val: unknown): string {
     return '""';
   }
   const str = typeof val === "object" ? JSON.stringify(val) : String(val);
-  if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+  if (
+    str.includes(",") ||
+    str.includes('"') ||
+    str.includes("\n") ||
+    str.includes("\r")
+  ) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
@@ -78,7 +83,9 @@ export const fileGeneratorExecutor: NodeExecutor<FileGeneratorData> = async ({
         status: "error",
       }),
     );
-    throw new NonRetriableError("File Generator node: Variable name is required");
+    throw new NonRetriableError(
+      "File Generator node: Variable name is required",
+    );
   }
 
   if (!data.content) {
@@ -111,7 +118,9 @@ export const fileGeneratorExecutor: NodeExecutor<FileGeneratorData> = async ({
       // Check if data.content directly references an array variable, e.g. {{dbRetrive.rows}} or {{json dbRetrive.rows}}
       let content = "";
       const trimmed = data.content?.trim() || "";
-      const varMatch = trimmed.match(/^\{{2,3}\s*(?:json\s+)?([a-zA-Z0-9_$.]+)\s*\}{2,3}$/);
+      const varMatch = trimmed.match(
+        /^\{{2,3}\s*(?:json\s+)?([a-zA-Z0-9_$.]+)\s*\}{2,3}$/,
+      );
       let rawArray: Record<string, unknown>[] | undefined;
 
       if (varMatch) {
@@ -138,7 +147,11 @@ export const fileGeneratorExecutor: NodeExecutor<FileGeneratorData> = async ({
           // Try parsing JSON array from content if applicable
           try {
             const parsed = JSON.parse(content);
-            if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
+            if (
+              Array.isArray(parsed) &&
+              parsed.length > 0 &&
+              typeof parsed[0] === "object"
+            ) {
               content = convertArrayToCsv(parsed);
             }
           } catch {

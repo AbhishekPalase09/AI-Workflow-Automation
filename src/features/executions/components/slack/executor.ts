@@ -1,9 +1,9 @@
 import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
+import ky from "ky";
 import type { NodeExecutor } from "@/features/executions/types";
 import { slackChannel } from "@/inngest/channels/slack";
-import ky from "ky";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);
@@ -68,7 +68,7 @@ export const slackExecutor: NodeExecutor<SlackData> = async ({
           slackChannel().status({
             nodeId,
             status: "error",
-          })
+          }),
         );
         throw new NonRetriableError("Slack node: Variable name is missing");
       }
@@ -80,7 +80,7 @@ export const slackExecutor: NodeExecutor<SlackData> = async ({
         },
       };
     });
-    
+
     await publish(
       slackChannel().status({
         nodeId,
@@ -90,7 +90,7 @@ export const slackExecutor: NodeExecutor<SlackData> = async ({
 
     return result;
   } catch (error) {
-     await publish(
+    await publish(
       slackChannel().status({
         nodeId,
         status: "error",

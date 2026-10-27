@@ -1,7 +1,7 @@
 import { Connection, Node } from "@/generated/prisma";
 import toposort from "toposort";
 import { inngest } from "./client";
-import { createId } from "@paralleldrive/cuid2";  
+import { createId } from "@paralleldrive/cuid2";
 
 export const topologicalSort = (
   nodes: Node[],
@@ -31,10 +31,9 @@ export const topologicalSort = (
     }
   }
 
-
   // Perform topological sort
   let sortedNodeIds: string[];
-  
+
   try {
     sortedNodeIds = toposort(edges);
     // Remove duplicates (from self-edges)
@@ -45,7 +44,6 @@ export const topologicalSort = (
     }
     throw error;
   }
- 
 
   // Map sorted IDs back to node objects
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
@@ -106,8 +104,8 @@ export const getTriggerReachableNodes = (
 };
 
 export const sendWorkflowExecution = async (data: {
-    workflowId: string;
-    [key: string]: any;
+  workflowId: string;
+  [key: string]: any;
 }) => {
   return inngest.send({
     name: "workflows/execute.workflow",

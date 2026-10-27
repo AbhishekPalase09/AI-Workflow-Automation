@@ -32,96 +32,98 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     }),
   );
 
-  
-try {
-  const result = await step.run("http-request", async () => {
+  try {
+    const result = await step.run("http-request", async () => {
+      if (!data.endpoint) {
+        await publish(
+          httpRequestChannel().status({
+            nodeId,
+            status: "error",
+          }),
+        );
+        throw new NonRetriableError(
+          "HTTP Request node: No endpoint configured",
+        );
+      }
 
-    if (!data.endpoint) {
-    await publish(
-    httpRequestChannel().status({
-      nodeId,
-      status: "error",
-    }),
-  );
-    throw new NonRetriableError("HTTP Request node: No endpoint configured");
-  }
+      if (!data.variableName) {
+        await publish(
+          httpRequestChannel().status({
+            nodeId,
+            status: "error",
+          }),
+        );
+        throw new NonRetriableError(
+          "HTTP Request node: Variable name not configured",
+        );
+      }
 
-  if (!data.variableName) {
-    await publish(
-    httpRequestChannel().status({
-      nodeId,
-      status: "error",
-    }),
-  );
-    throw new NonRetriableError("HTTP Request node: Variable name not configured");
-  }
+      if (!data.method) {
+        await publish(
+          httpRequestChannel().status({
+            nodeId,
+            status: "error",
+          }),
+        );
+        throw new NonRetriableError("HTTP Request node: Method not configured");
+      }
+      const endpoint = Handlebars.compile(data.endpoint)(context);
+      const method = data.method;
 
-  if (!data.method) {
-    await publish(
-    httpRequestChannel().status({
-      nodeId,
-      status: "error",
-    }),
-  );
-    throw new NonRetriableError("HTTP Request node: Method not configured");
-  }
-    const endpoint = Handlebars.compile(data.endpoint)(context);
-    const method = data.method;
+      const options: KyOptions = { method };
 
-    const options: KyOptions = { method };
+      if (["POST", "PUT", "PATCH"].includes(method)) {
+        const resolved = Handlebars.compile(data.body || "{}")(context);
+        JSON.parse(resolved);
+        options.body = resolved;
+        options.headers = {
+          "Content-Type": "application/json",
+        };
+      }
 
-    if (["POST", "PUT", "PATCH"].includes(method)) {
-      const resolved = Handlebars.compile(data.body || "{}")(context);
-      JSON.parse(resolved);
-      options.body = resolved;
-      options.headers = {
-        "Content-Type": "application/json",
+      const response = await ky(endpoint, options);
+      const contentType = response.headers.get("content-type");
+      const responseData = contentType?.includes("application/json")
+        ? await response.json()
+        : await response.text();
+
+      const responsePayload = {
+        httpResponse: {
+          status: response.status,
+          statusText: response.statusText,
+          data: responseData,
+        },
       };
-    }
 
-    const response = await ky(endpoint, options);
-    const contentType = response.headers.get("content-type");
-    const responseData = contentType?.includes("application/json")
-      ? await response.json()
-      : await response.text();
+      // if (data.variableName) {
+      //   return {
+      //     ...context,
+      //     [data.variableName]: responsePayload,
+      //   }
+      // }
 
-    const responsePayload = {
-      httpResponse: {
-        status: response.status,
-        statusText: response.statusText,
-        data: responseData,
-      },
-    };
+      // Fallback to direct httpResponse for backward compatibility
+      return {
+        ...context,
+        [data.variableName]: responsePayload,
+      };
+    });
 
-    // if (data.variableName) {
-    //   return {
-    //     ...context,
-    //     [data.variableName]: responsePayload,
-    //   }
-    // }
+    await publish(
+      httpRequestChannel().status({
+        nodeId,
+        status: "success",
+      }),
+    );
 
-    // Fallback to direct httpResponse for backward compatibility
-    return {
-      ...context,
-      [data.variableName]: responsePayload,
-    };
-  });
-
-  await publish(
-    httpRequestChannel().status({
-      nodeId,
-      status: "success",
-    }),
-  );
-
-  return result;
-}catch (error) {
-  await publish(
-    httpRequestChannel().status({
-      nodeId,
-      status: "error",
-    }),
-  );
-  throw error;
-}
+    return result;
+  } catch (error) {
+    await publish(
+      httpRequestChannel().status({
+        nodeId,
+        status: "error",
+      }),
+    );
+    throw error;
+  }
 };

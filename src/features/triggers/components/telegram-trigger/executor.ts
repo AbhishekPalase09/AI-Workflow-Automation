@@ -3,12 +3,9 @@ import { telegramTriggerChannel } from "@/inngest/channels/telegram-trigger";
 
 type TelegramTriggerData = Record<string, unknown>;
 
-export const telegramTriggerExecutor: NodeExecutor<TelegramTriggerData> = async ({
-  nodeId,
-  context,
-  step,
-  publish,
-}) => {
+export const telegramTriggerExecutor: NodeExecutor<
+  TelegramTriggerData
+> = async ({ nodeId, context, step, publish }) => {
   await publish(
     telegramTriggerChannel().status({
       nodeId,

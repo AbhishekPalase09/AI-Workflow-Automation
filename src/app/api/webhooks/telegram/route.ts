@@ -33,7 +33,12 @@ export async function POST(request: NextRequest) {
       from.username ||
       "";
 
-    const text = (msg.text || msg.caption || body.callback_query?.data || "").trim();
+    const text = (
+      msg.text ||
+      msg.caption ||
+      body.callback_query?.data ||
+      ""
+    ).trim();
 
     const telegramData = {
       updateId: body.update_id,

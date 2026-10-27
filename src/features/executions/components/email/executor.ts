@@ -119,7 +119,9 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
     const result = await step.run("send-email", async () => {
       let attachments: Array<{ filename: string; content: string }> | undefined;
       if (data.attachmentVariableName) {
-        const cleanVar = data.attachmentVariableName.replace(/[{}]/g, "").trim();
+        const cleanVar = data.attachmentVariableName
+          .replace(/[{}]/g, "")
+          .trim();
         const attached = context[cleanVar] as
           | { filename?: string; content?: string; base64?: string }
           | undefined;

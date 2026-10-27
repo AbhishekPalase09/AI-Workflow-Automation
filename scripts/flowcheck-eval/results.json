@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-10-27T13:46:24.462Z",
+  "cleanCorpusCount": 30,
+  "cleanErrors": 0,
+  "cleanFPR": 0,
+  "meanLatencyMs": 0.2707533333333288,
+  "totalMutants": 193,
+  "faultClasses": [
+    {
+      "faultClass": "typo",
+      "mutantsGenerated": 30,
+      "runtimeFailures": 30,
+      "flaggedByError": 30,
+      "flaggedByWarn": 30,
+      "repError": 100,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "nonAncestor",
+      "mutantsGenerated": 27,
+      "runtimeFailures": 27,
+      "flaggedByError": 26,
+      "flaggedByWarn": 27,
+      "repError": 96.29629629629629,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "unknownField",
+      "mutantsGenerated": 23,
+      "runtimeFailures": 22,
+      "flaggedByError": 22,
+      "flaggedByWarn": 22,
+      "repError": 100,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "deletedVariable",
+      "mutantsGenerated": 30,
+      "runtimeFailures": 30,
+      "flaggedByError": 26,
+      "flaggedByWarn": 29,
+      "repError": 86.66666666666667,
+      "repErrorWarn": 96.66666666666667
+    },
+    {
+      "faultClass": "typeMisuse",
+      "mutantsGenerated": 26,
+      "runtimeFailures": 26,
+      "flaggedByError": 26,
+      "flaggedByWarn": 26,
+      "repError": 100,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "duplicateName",
+      "mutantsGenerated": 27,
+      "runtimeFailures": 24,
+      "flaggedByError": 23,
+      "flaggedByWarn": 24,
+      "repError": 95.83333333333334,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "syntax",
+      "mutantsGenerated": 30,
+      "runtimeFailures": 30,
+      "flaggedByError": 30,
+      "flaggedByWarn": 30,
+      "repError": 100,
+      "repErrorWarn": 100
+    }
+  ],
+  "ablations": [
+    {
+      "name": "Full Flowcheck (Default)",
+      "description": "Sequential topological union must-scopes, full lattice, reachability BFS",
+      "totalMutants": 193,
+      "runtimeFailures": 189,
+      "flaggedByError": 183,
+      "repError": 96.82539682539682,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.2707533333333288
+    },
+    {
+      "name": "Branch-Sensitive (Ablation C)",
+      "description": "Intersection over direct parents (must = ⋂ parents); emits false W1 on diamonds",
+      "totalMutants": 193,
+      "runtimeFailures": 189,
+      "flaggedByError": 183,
+      "repError": 96.82539682539682,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.28158346666666195
+    },
+    {
+      "name": "Syntax-Only (Ablation A)",
+      "description": "Only flags root unknown variables (E1); ignores nested property schemas",
+      "totalMutants": 193,
+      "runtimeFailures": 189,
+      "flaggedByError": 125,
+      "repError": 66.13756613756614,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.1949423999999967
+    },
+    {
+      "name": "No HTTP Sample (Ablation B)",
+      "description": "Treats HTTP response body as open/unknown without user-supplied schema",
+      "totalMutants": 193,
+      "runtimeFailures": 189,
+      "flaggedByError": 161,
+      "repError": 85.18518518518519,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.23826293333332935
+    }
+  ]
+}

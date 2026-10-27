@@ -8,11 +8,11 @@ export const executionsRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {
       return prisma.execution.findUniqueOrThrow({
-        where: { 
-          id: input.id, 
-          workflow: { 
-            userId: ctx.auth.user.id
-          }
+        where: {
+          id: input.id,
+          workflow: {
+            userId: ctx.auth.user.id,
+          },
         },
         include: {
           workflow: {
@@ -21,7 +21,7 @@ export const executionsRouter = createTRPCRouter({
               name: true,
             },
           },
-        }
+        },
       });
     }),
   getMany: protectedProcedure
@@ -33,7 +33,7 @@ export const executionsRouter = createTRPCRouter({
           .min(PAGINATION.MIN_PAGE_SIZE)
           .max(PAGINATION.MAX_PAGE_SIZE)
           .default(PAGINATION.DEFAULT_PAGE_SIZE),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const { page, pageSize } = input;
@@ -42,7 +42,7 @@ export const executionsRouter = createTRPCRouter({
         prisma.execution.findMany({
           skip: (page - 1) * pageSize,
           take: pageSize,
-          where: { 
+          where: {
             workflow: {
               userId: ctx.auth.user.id,
             },

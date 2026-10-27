@@ -73,7 +73,12 @@ export async function setTelegramWebhookAction({
       .post(`https://api.telegram.org/bot${token}/setWebhook`, {
         json: {
           url: webhookUrl,
-          allowed_updates: ["message", "edited_message", "channel_post", "callback_query"],
+          allowed_updates: [
+            "message",
+            "edited_message",
+            "channel_post",
+            "callback_query",
+          ],
         },
         timeout: 10000,
       })
@@ -82,12 +87,15 @@ export async function setTelegramWebhookAction({
     if (response.ok) {
       return {
         success: true,
-        message: response.description || "Webhook registered successfully with Telegram!",
+        message:
+          response.description ||
+          "Webhook registered successfully with Telegram!",
       };
     } else {
       return {
         success: false,
-        message: response.description || "Telegram returned an error setting webhook.",
+        message:
+          response.description || "Telegram returned an error setting webhook.",
       };
     }
   } catch (error) {

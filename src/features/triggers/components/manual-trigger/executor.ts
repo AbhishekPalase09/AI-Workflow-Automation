@@ -17,9 +17,7 @@ export const manualTriggerExecutor: NodeExecutor<ManualTriggerData> = async ({
 
   const result = await step.run("manual-trigger", async () => context);
 
-
-  
-    await publish(
+  await publish(
     manualTriggerChannel().status({
       nodeId,
       status: "success",

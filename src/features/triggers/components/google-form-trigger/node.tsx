@@ -7,9 +7,8 @@ import { fetchGoogleFormTriggerRealtimeToken } from "./actions";
 import { GOOGLE_FORM_TRIGGER_CHANNEL_NAME } from "@/inngest/channels/google-form-trigger";
 
 export const GoogleFormTrigger = memo((props: NodeProps) => {
-  
-  const [dialogOpen,setDialogOpen]=useState(false)
-  
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
     channel: GOOGLE_FORM_TRIGGER_CHANNEL_NAME,
@@ -17,10 +16,8 @@ export const GoogleFormTrigger = memo((props: NodeProps) => {
     refreshToken: fetchGoogleFormTriggerRealtimeToken,
   });
 
-  
-  const handleOpenSettings = () => setDialogOpen(true)
+  const handleOpenSettings = () => setDialogOpen(true);
 
-  
   return (
     <>
       <GoogleFormTriggerDialog open={dialogOpen} onOpenChange={setDialogOpen} />
@@ -29,10 +26,10 @@ export const GoogleFormTrigger = memo((props: NodeProps) => {
         icon="/logos/googleform.svg"
         name="Google form"
         description="When form is submitted"
-         status={nodeStatus} 
-         onSettings={handleOpenSettings} 
-         onDoubleClick={handleOpenSettings} 
+        status={nodeStatus}
+        onSettings={handleOpenSettings}
+        onDoubleClick={handleOpenSettings}
       />
     </>
-  )
+  );
 });
