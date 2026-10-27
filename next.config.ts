@@ -5,12 +5,12 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   /* config options here */
   async redirects() {
-    return[
+    return [
       {
         source: "/",
         destination: "/workflows",
         permanent: false,
-      }
+      },
     ];
   },
 };

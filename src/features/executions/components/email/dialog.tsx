@@ -1,5 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,14 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
-import { CredentialType } from "@/generated/prisma";
 import {
   Select,
   SelectContent,
@@ -33,14 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea";
+import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
+import { CredentialType } from "@/generated/prisma";
 
 const formSchema = z.object({
   variableName: z
     .string()
     .min(1, { message: "Variable name is required" })
-    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, { 
-      message: "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
+    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, {
+      message:
+        "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
     }),
   credentialId: z.string().optional(),
   from: z.string().min(1, "Sender email is required"),
@@ -52,7 +53,14 @@ const formSchema = z.object({
 
 export type EmailFormValues = z.infer<typeof formSchema>;
 
+import {
+  applyVariableQuickFix,
+  FieldDiagnostics,
+} from "@/features/editor/components/field-diagnostics";
+import { useSyncDraftNode } from "@/features/editor/hooks/use-flow-diagnostics";
+
 interface Props {
+  nodeId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: z.infer<typeof formSchema>) => void;
@@ -60,15 +68,14 @@ interface Props {
 }
 
 export const EmailDialog = ({
+  nodeId,
   open,
   onOpenChange,
   onSubmit,
   defaultValues = {},
 }: Props) => {
-  const { 
-    data: credentials,
-    isLoading: isLoadingCredentials,
-  } = useCredentialsByType(CredentialType.RESEND);
+  const { data: credentials, isLoading: isLoadingCredentials } =
+    useCredentialsByType(CredentialType.RESEND);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,6 +89,9 @@ export const EmailDialog = ({
       attachmentVariableName: defaultValues.attachmentVariableName || "",
     },
   });
+
+  // Keep Flowcheck static analysis reactively updated from draft values while typing before Save
+  useSyncDraftNode(nodeId, form.watch(), open);
 
   // Reset form values when dialog opens with new defaults
   useEffect(() => {
@@ -126,10 +136,7 @@ export const EmailDialog = ({
                 <FormItem>
                   <FormLabel>Variable Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="myEmail"
-                      {...field}
-                    />
+                    <Input placeholder="myEmail" {...field} />
                   </FormControl>
                   <FormDescription>
                     Use this name to reference the email result in other nodes:{" "}
@@ -145,26 +152,28 @@ export const EmailDialog = ({
               name="credentialId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Resend Credential (Optional if RESEND_API_KEY is set)</FormLabel>
+                  <FormLabel>
+                    Resend Credential (Optional if RESEND_API_KEY is set)
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    disabled={
-                      isLoadingCredentials
-                      || !credentials?.length
-                    }
+                    disabled={isLoadingCredentials || !credentials?.length}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder={credentials?.length ? "Select a Resend credential" : "No saved Resend credentials (uses env key)"} />
+                        <SelectValue
+                          placeholder={
+                            credentials?.length
+                              ? "Select a Resend credential"
+                              : "No saved Resend credentials (uses env key)"
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {credentials?.map((credential) => (
-                        <SelectItem
-                          key={credential.id}
-                          value={credential.id}
-                        >
+                        <SelectItem key={credential.id} value={credential.id}>
                           <div className="flex items-center gap-2">
                             <Image
                               src="/logos/resend.svg"
@@ -196,8 +205,25 @@ export const EmailDialog = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Sender name and email (e.g. &apos;Support &lt;support@yourdomain.com&gt;&apos; or &apos;onboarding@resend.dev&apos;)
+                    Sender name and email (e.g. &apos;Support
+                    &lt;support@yourdomain.com&gt;&apos; or
+                    &apos;onboarding@resend.dev&apos;)
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="from"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("from", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "from",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -216,8 +242,24 @@ export const EmailDialog = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Recipient email address. You can use dynamic variables like {"{{googleForm.email}}"}
+                    Recipient email address. You can use dynamic variables like{" "}
+                    {"{{googleForm.email}}"}
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="to"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("to", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "to",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -238,6 +280,21 @@ export const EmailDialog = ({
                   <FormDescription>
                     Email subject line. Supports Handlebars variables.
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="subject"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("subject", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "subject",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -259,6 +316,21 @@ export const EmailDialog = ({
                   <FormDescription>
                     Email body content. Supports HTML and {"{{variables}}"}.
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="body"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("body", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "body",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -271,13 +343,11 @@ export const EmailDialog = ({
                 <FormItem>
                   <FormLabel>File Attachment Variable (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="myReport or {{myReport}}"
-                      {...field}
-                    />
+                    <Input placeholder="myReport or {{myReport}}" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Variable name from a File Generator node (e.g. &apos;myReport&apos;) to attach to this email.
+                    Variable name from a File Generator node (e.g.
+                    &apos;myReport&apos;) to attach to this email.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -1,5 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,14 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
-import { CredentialType } from "@/generated/prisma";
 import {
   Select,
   SelectContent,
@@ -33,24 +31,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea";
+import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
+import { CredentialType } from "@/generated/prisma";
 
 const formSchema = z.object({
   variableName: z
     .string()
     .min(1, { message: "Variable name is required" })
-    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, { 
-      message: "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
+    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, {
+      message:
+        "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
     }),
   credentialId: z.string().optional(),
   connectionString: z.string().optional(),
   query: z.string().min(1, "SQL query is required"),
-  ssl: z.enum(["require", "disable"]),//HERE I AM
+  ssl: z.enum(["require", "disable"]), //HERE I AM
 });
 
 export type DatabaseFormValues = z.infer<typeof formSchema>;
 
+import {
+  applyVariableQuickFix,
+  FieldDiagnostics,
+} from "@/features/editor/components/field-diagnostics";
+import { useSyncDraftNode } from "@/features/editor/hooks/use-flow-diagnostics";
+
 interface Props {
+  nodeId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: DatabaseFormValues) => void;
@@ -58,15 +66,14 @@ interface Props {
 }
 
 export const DatabaseDialog = ({
+  nodeId,
   open,
   onOpenChange,
   onSubmit,
   defaultValues = {},
 }: Props) => {
-  const { 
-    data: credentials,
-    isLoading: isLoadingCredentials,
-  } = useCredentialsByType(CredentialType.DATABASE);
+  const { data: credentials, isLoading: isLoadingCredentials } =
+    useCredentialsByType(CredentialType.DATABASE);
 
   const form = useForm<DatabaseFormValues>({
     resolver: zodResolver(formSchema),
@@ -78,6 +85,9 @@ export const DatabaseDialog = ({
       ssl: defaultValues.ssl || "require",
     },
   });
+
+  // Keep Flowcheck static analysis reactively updated from draft values while typing before Save
+  useSyncDraftNode(nodeId, form.watch(), open);
 
   useEffect(() => {
     if (open) {
@@ -104,7 +114,8 @@ export const DatabaseDialog = ({
         <DialogHeader>
           <DialogTitle>Database (PostgreSQL) Configuration</DialogTitle>
           <DialogDescription>
-            Execute SQL queries on any PostgreSQL database (Neon, Supabase, AWS RDS, Render, self-hosted, etc.).
+            Execute SQL queries on any PostgreSQL database (Neon, Supabase, AWS
+            RDS, Render, self-hosted, etc.).
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -119,10 +130,7 @@ export const DatabaseDialog = ({
                 <FormItem>
                   <FormLabel>Variable Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="db"
-                      {...field}
-                    />
+                    <Input placeholder="db" {...field} />
                   </FormControl>
                   <FormDescription>
                     Reference query output in other nodes:{" "}
@@ -144,22 +152,22 @@ export const DatabaseDialog = ({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    disabled={
-                      isLoadingCredentials
-                      || !credentials?.length
-                    }
+                    disabled={isLoadingCredentials || !credentials?.length}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder={credentials?.length ? "Select a saved Database credential" : "No saved Database credentials"} />
+                        <SelectValue
+                          placeholder={
+                            credentials?.length
+                              ? "Select a saved Database credential"
+                              : "No saved Database credentials"
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {credentials?.map((credential) => (
-                        <SelectItem
-                          key={credential.id}
-                          value={credential.id}
-                        >
+                        <SelectItem key={credential.id} value={credential.id}>
                           <div className="flex items-center gap-2">
                             <Image
                               src="/logos/database.svg"
@@ -174,7 +182,8 @@ export const DatabaseDialog = ({
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Select a saved connection string credential or provide one below.
+                    Select a saved connection string credential or provide one
+                    below.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -196,8 +205,26 @@ export const DatabaseDialog = ({
                       />
                     </FormControl>
                     <FormDescription>
-                      Postgres connection URI. Supports Handlebars variables like <code>{`{{env.DB_URL}}`}</code>.
+                      Postgres connection URI. Supports Handlebars variables
+                      like <code>{`{{env.DB_URL}}`}</code>.
                     </FormDescription>
+                    <FieldDiagnostics
+                      nodeId={nodeId}
+                      field="connectionString"
+                      value={field.value}
+                      onSelectPath={(val) =>
+                        form.setValue("connectionString", val, {
+                          shouldValidate: true,
+                        })
+                      }
+                      onQuickFix={(suggestion) => {
+                        form.setValue(
+                          "connectionString",
+                          applyVariableQuickFix(field.value || "", suggestion),
+                          { shouldValidate: true },
+                        );
+                      }}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -220,12 +247,17 @@ export const DatabaseDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="require">Require SSL (Cloud DBs: Neon, Supabase, RDS)</SelectItem>
-                      <SelectItem value="disable">Disable SSL (Localhost / Docker)</SelectItem>
+                      <SelectItem value="require">
+                        Require SSL (Cloud DBs: Neon, Supabase, RDS)
+                      </SelectItem>
+                      <SelectItem value="disable">
+                        Disable SSL (Localhost / Docker)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Recommended: <b>Require SSL</b> for Neon, Supabase, Timescale, Render, and AWS RDS.
+                    Recommended: <b>Require SSL</b> for Neon, Supabase,
+                    Timescale, Render, and AWS RDS.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -246,8 +278,28 @@ export const DatabaseDialog = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Supports standard SQL (<code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>) with Handlebars variables like <code>{`{{googleForm.name}}`}</code>.
+                    Supports standard SQL (<code>SELECT</code>,{" "}
+                    <code>INSERT</code>, <code>UPDATE</code>,{" "}
+                    <code>DELETE</code>) with Handlebars variables (e.g.{" "}
+                    <code>{`{{googleForm.name}}`}</code> or{" "}
+                    <code>{`{{lookup googleForm.responses "Student Name"}}`}</code>{" "}
+                    for dynamic keys with spaces).
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="query"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("query", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "query",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

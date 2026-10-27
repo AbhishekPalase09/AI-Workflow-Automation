@@ -103,6 +103,7 @@ model Workflow {
   userId      String
   connections Connection[]
   nodes       Node[]
+  executions  Execution[]
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -156,4 +157,29 @@ enum NodeType {
   FILE_GENERATOR
   TELEGRAM
   DATABASE
+}
+
+
+enum ExecutionStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model Execution {
+  id String @id @default(cuid())
+
+  workflowId String
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  status ExecutionStatus @default(RUNNING)
+  error String? @db.Text
+  errorStack String? @db.Text
+
+  startedAt DateTime @default(now())
+  completedAt DateTime?
+
+  inngestEventId String @unique
+
+  output Json?
 }

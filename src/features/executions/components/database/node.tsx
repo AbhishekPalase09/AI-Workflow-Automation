@@ -1,12 +1,12 @@
 "use client";
 
-import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
+import { type Node, type NodeProps, useReactFlow } from "@xyflow/react";
 import { memo, useState } from "react";
-import { BaseExecutionNode } from "../base-execution-node";
-import { DatabaseDialog, DatabaseFormValues } from "./dialog";
-import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchDatabaseRealtimeToken } from "./actions";
 import { DATABASE_CHANNEL_NAME } from "@/inngest/channels/database";
+import { useNodeStatus } from "../../hooks/use-node-status";
+import { BaseExecutionNode } from "../base-execution-node";
+import { fetchDatabaseRealtimeToken } from "./actions";
+import { DatabaseDialog, type DatabaseFormValues } from "./dialog";
 
 type DatabaseNodeData = {
   variableName?: string;
@@ -56,6 +56,7 @@ export const DatabaseNode = memo((props: NodeProps<DatabaseNodeType>) => {
   return (
     <>
       <DatabaseDialog
+        nodeId={props.id}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}

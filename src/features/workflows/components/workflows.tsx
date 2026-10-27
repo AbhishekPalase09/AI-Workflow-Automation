@@ -1,18 +1,22 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { 
+import {
   EmptyView,
-  EntityContainer, 
-  EntityHeader, 
-  EntityItem, 
-  EntityList, 
-  EntityPagination, 
+  EntityContainer,
+  EntityHeader,
+  EntityItem,
+  EntityList,
+  EntityPagination,
   EntitySearch,
   ErrorView,
-  LoadingView
+  LoadingView,
 } from "@/components/entity-components";
-import { useCreateWorkflow, useRemoveWorkflow, useSuspenseWorkflows } from "../hooks/use-workflows"
+import {
+  useCreateWorkflow,
+  useRemoveWorkflow,
+  useSuspenseWorkflows,
+} from "../hooks/use-workflows";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { useRouter } from "next/navigation";
 import { useWorkflowsParams } from "../hooks/use-workflows-params";
@@ -46,7 +50,7 @@ export const WorkflowsList = () => {
       renderItem={(workflow) => <WorkflowItem data={workflow} />}
       emptyView={<WorkflowsEmpty />}
     />
-  )
+  );
 };
 
 export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
@@ -63,7 +67,7 @@ export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
         handleError(error);
       },
     });
-  }
+  };
 
   return (
     <>
@@ -95,7 +99,7 @@ export const WorkflowsPagination = () => {
 };
 
 export const WorkflowsContainer = ({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) => {
@@ -130,7 +134,7 @@ export const WorkflowsEmpty = () => {
       },
       onSuccess: (data) => {
         router.push(`/workflows/${data.id}`);
-      }
+      },
     });
   };
 
@@ -145,16 +149,12 @@ export const WorkflowsEmpty = () => {
   );
 };
 
-export const WorkflowItem = ({
-  data,
-}: { 
-  data: Workflow
-}) => {
+export const WorkflowItem = ({ data }: { data: Workflow }) => {
   const removeWorkflow = useRemoveWorkflow();
 
   const handleRemove = () => {
     removeWorkflow.mutate({ id: data.id });
-  }
+  };
 
   return (
     <EntityItem
@@ -175,5 +175,5 @@ export const WorkflowItem = ({
       onRemove={handleRemove}
       isRemoving={removeWorkflow.isPending}
     />
-  )
-}
+  );
+};

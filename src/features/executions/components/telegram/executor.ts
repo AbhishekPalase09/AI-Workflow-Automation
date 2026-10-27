@@ -133,7 +133,9 @@ export const telegramExecutor: NodeExecutor<TelegramData> = async ({
         payload.parse_mode = data.parseMode;
       }
 
-      const sendMessage = async (body: Record<string, unknown>): Promise<TelegramApiResponse> => {
+      const sendMessage = async (
+        body: Record<string, unknown>,
+      ): Promise<TelegramApiResponse> => {
         try {
           return await ky
             .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -142,13 +144,14 @@ export const telegramExecutor: NodeExecutor<TelegramData> = async ({
             })
             .json<TelegramApiResponse>();
         } catch (err) {
-          let errorMsg = err instanceof Error ? err.message : "Unknown error";
+          const errorMsg = err instanceof Error ? err.message : "Unknown error";
           let errorDesc = "";
           let errorCode = 0;
 
           if (err instanceof HTTPError) {
             try {
-              const bodyJson = (await err.response.json()) as TelegramApiResponse;
+              const bodyJson =
+                (await err.response.json()) as TelegramApiResponse;
               if (bodyJson?.description) {
                 errorDesc = bodyJson.description;
                 errorCode = bodyJson.error_code || err.response.status;

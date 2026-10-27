@@ -1,5 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,12 +23,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -31,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 export const FileFormat = {
   CSV: "CSV",
@@ -54,8 +54,9 @@ const formSchema = z.object({
   variableName: z
     .string()
     .min(1, { message: "Variable name is required" })
-    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, { 
-      message: "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
+    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, {
+      message:
+        "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
     }),
   format: z.enum(["CSV", "JSON", "TXT", "HTML", "MARKDOWN"]),
   filename: z.string().min(1, "Filename is required"),
@@ -64,7 +65,14 @@ const formSchema = z.object({
 
 export type FileGeneratorFormValues = z.infer<typeof formSchema>;
 
+import {
+  applyVariableQuickFix,
+  FieldDiagnostics,
+} from "@/features/editor/components/field-diagnostics";
+import { useSyncDraftNode } from "@/features/editor/hooks/use-flow-diagnostics";
+
 interface Props {
+  nodeId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: z.infer<typeof formSchema>) => void;
@@ -72,6 +80,7 @@ interface Props {
 }
 
 export const FileGeneratorDialog = ({
+  nodeId,
   open,
   onOpenChange,
   onSubmit,
@@ -86,6 +95,9 @@ export const FileGeneratorDialog = ({
       content: defaultValues.content || "",
     },
   });
+
+  // Keep Flowcheck static analysis reactively updated from draft values while typing before Save
+  useSyncDraftNode(nodeId, form.watch(), open);
 
   useEffect(() => {
     if (open) {
@@ -128,7 +140,8 @@ export const FileGeneratorDialog = ({
         <DialogHeader>
           <DialogTitle>File Generator Configuration</DialogTitle>
           <DialogDescription>
-            Generate and format files (CSV, JSON, Markdown, HTML, TXT) from workflow data.
+            Generate and format files (CSV, JSON, Markdown, HTML, TXT) from
+            workflow data.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -143,14 +156,12 @@ export const FileGeneratorDialog = ({
                 <FormItem>
                   <FormLabel>Variable Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="myFile"
-                      {...field}
-                    />
+                    <Input placeholder="myFile" {...field} />
                   </FormControl>
                   <FormDescription>
                     Reference the generated file in downstream nodes:{" "}
-                    {`{{${watchVariableName}.filename}}`} or {`{{${watchVariableName}.content}}`}
+                    {`{{${watchVariableName}.filename}}`} or{" "}
+                    {`{{${watchVariableName}.content}}`}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -208,14 +219,28 @@ export const FileGeneratorDialog = ({
                 <FormItem>
                   <FormLabel>Filename</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="report.csv"
-                      {...field}
-                    />
+                    <Input placeholder="report.csv" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Supports Handlebars templating (e.g. &apos;report_{"{{googleForm.name}}"}.csv&apos;)
+                    Supports Handlebars templating (e.g. &apos;report_
+                    {"{{googleForm.name}}"}.csv&apos;)
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="filename"
+                    accepts="scalar"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("filename", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "filename",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -235,8 +260,25 @@ export const FileGeneratorDialog = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Input data or template. For CSV/JSON, you can pass arrays via {"{{json arrayVar}}"} or manual headers/rows.
+                    Input data or template. For CSV/JSON, you can pass arrays
+                    via {"{{json arrayVar}}"} or manual headers/rows.
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="content"
+                    accepts="any"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("content", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "content",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

@@ -7,9 +7,8 @@ import { fetchStripeTriggerRealtimeToken } from "./actions";
 import { STRIPE_TRIGGER_CHANNEL_NAME } from "@/inngest/channels/stripe-trigger";
 
 export const StripeTriggerNode = memo((props: NodeProps) => {
-  
-  const [dialogOpen,setDialogOpen]=useState(false)
-  
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
     channel: STRIPE_TRIGGER_CHANNEL_NAME,
@@ -17,10 +16,8 @@ export const StripeTriggerNode = memo((props: NodeProps) => {
     refreshToken: fetchStripeTriggerRealtimeToken,
   });
 
-  
-  const handleOpenSettings = () => setDialogOpen(true)
+  const handleOpenSettings = () => setDialogOpen(true);
 
-  
   return (
     <>
       <StripeTriggerDialog open={dialogOpen} onOpenChange={setDialogOpen} />
@@ -29,10 +26,10 @@ export const StripeTriggerNode = memo((props: NodeProps) => {
         icon="/logos/stripe.svg"
         name="Stripe"
         description="When stripe event is captured"
-         status={nodeStatus} 
-         onSettings={handleOpenSettings} 
-         onDoubleClick={handleOpenSettings} 
+        status={nodeStatus}
+        onSettings={handleOpenSettings}
+        onDoubleClick={handleOpenSettings}
       />
     </>
-  )
+  );
 });

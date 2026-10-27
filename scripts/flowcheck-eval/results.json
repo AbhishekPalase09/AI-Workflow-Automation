@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-10-27T14:11:45.404Z",
+  "cleanCorpusCount": 31,
+  "cleanErrors": 0,
+  "cleanWarnings": 8,
+  "cleanFPR": 0,
+  "cleanWarningFPR": 25.806451612903224,
+  "meanLatencyMs": 0.3677064516129022,
+  "totalMutants": 195,
+  "faultClasses": [
+    {
+      "faultClass": "typo",
+      "mutantsGenerated": 31,
+      "runtimeFailures": 31,
+      "flaggedByError": 30,
+      "flaggedByWarn": 30,
+      "repError": 96.7741935483871,
+      "repErrorWarn": 96.7741935483871
+    },
+    {
+      "faultClass": "nonAncestor",
+      "mutantsGenerated": 27,
+      "runtimeFailures": 27,
+      "flaggedByError": 26,
+      "flaggedByWarn": 27,
+      "repError": 96.29629629629629,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "unknownField",
+      "mutantsGenerated": 23,
+      "runtimeFailures": 22,
+      "flaggedByError": 22,
+      "flaggedByWarn": 22,
+      "repError": 100,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "deletedVariable",
+      "mutantsGenerated": 31,
+      "runtimeFailures": 30,
+      "flaggedByError": 26,
+      "flaggedByWarn": 29,
+      "repError": 86.66666666666667,
+      "repErrorWarn": 96.66666666666667
+    },
+    {
+      "faultClass": "typeMisuse",
+      "mutantsGenerated": 26,
+      "runtimeFailures": 26,
+      "flaggedByError": 26,
+      "flaggedByWarn": 26,
+      "repError": 100,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "duplicateName",
+      "mutantsGenerated": 27,
+      "runtimeFailures": 24,
+      "flaggedByError": 23,
+      "flaggedByWarn": 24,
+      "repError": 95.83333333333334,
+      "repErrorWarn": 100
+    },
+    {
+      "faultClass": "syntax",
+      "mutantsGenerated": 30,
+      "runtimeFailures": 30,
+      "flaggedByError": 30,
+      "flaggedByWarn": 30,
+      "repError": 100,
+      "repErrorWarn": 100
+    }
+  ],
+  "ablations": [
+    {
+      "name": "Full Flowcheck (Default)",
+      "description": "Sequential topological union must-scopes, full lattice, reachability BFS",
+      "totalMutants": 195,
+      "runtimeFailures": 190,
+      "flaggedByError": 183,
+      "repError": 96.3157894736842,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.3677064516129022
+    },
+    {
+      "name": "Branch-Sensitive (Ablation C)",
+      "description": "Intersection over direct parents (must = ⋂ parents); emits false W1 on diamonds",
+      "totalMutants": 195,
+      "runtimeFailures": 190,
+      "flaggedByError": 183,
+      "repError": 96.3157894736842,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.3824147096774183
+    },
+    {
+      "name": "Syntax-Only (Ablation A)",
+      "description": "Only flags root unknown variables (E1); ignores nested property schemas",
+      "totalMutants": 195,
+      "runtimeFailures": 190,
+      "flaggedByError": 125,
+      "repError": 65.78947368421053,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.2647486451612896
+    },
+    {
+      "name": "No HTTP Sample (Ablation B)",
+      "description": "Treats HTTP response body as open/unknown without user-supplied schema",
+      "totalMutants": 195,
+      "runtimeFailures": 190,
+      "flaggedByError": 161,
+      "repError": 84.73684210526315,
+      "cleanErrors": 0,
+      "meanLatencyMs": 0.32358167741935395
+    }
+  ]
+}

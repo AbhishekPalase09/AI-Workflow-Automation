@@ -1,7 +1,7 @@
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateText } from "ai";
 import Handlebars from "handlebars";
 import { NonRetriableError } from "inngest";
-import { generateText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 import type { NodeExecutor } from "@/features/executions/types";
 import { openAiChannel } from "@/inngest/channels/openai";
 import prisma from "@/lib/db";
@@ -40,7 +40,7 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
       openAiChannel().status({
         nodeId,
         status: "error",
-      })
+      }),
     );
     throw new NonRetriableError("OpenAi node: Variable name is missing");
   }
@@ -50,7 +50,7 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
       openAiChannel().status({
         nodeId,
         status: "error",
-      })
+      }),
     );
     throw new NonRetriableError("OpenAi node: User prompt is missing");
   }
@@ -85,7 +85,7 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
       openAiChannel().status({
         nodeId,
         status: "error",
-      })
+      }),
     );
   }
 
@@ -94,26 +94,20 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
   });
 
   try {
-    const { steps } = await step.ai.wrap(
-      "openai-generate-text",
-      generateText,
-      {
-        model: openai("gpt-4"),
-        system: systemPrompt,
-        prompt: userPrompt,
-        experimental_telemetry: {
-          isEnabled: true,
-          recordInputs: true,
-          recordOutputs: true,
-        },
+    const { steps } = await step.ai.wrap("openai-generate-text", generateText, {
+      model: openai("gpt-4"),
+      system: systemPrompt,
+      prompt: userPrompt,
+      experimental_telemetry: {
+        isEnabled: true,
+        recordInputs: true,
+        recordOutputs: true,
       },
-    );
+    });
 
-    const text = 
-      steps[0].content[0].type === "text" 
-        ? steps[0].content[0].text
-        : "";
-    
+    const text =
+      steps[0].content[0].type === "text" ? steps[0].content[0].text : "";
+
     await publish(
       openAiChannel().status({
         nodeId,
@@ -126,9 +120,9 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({
       [data.variableName]: {
         text,
       },
-    }
+    };
   } catch (error) {
-     await publish(
+    await publish(
       openAiChannel().status({
         nodeId,
         status: "error",

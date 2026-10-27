@@ -40,8 +40,7 @@ export function useNodeStatus({
       .sort((a, b) => {
         if (a.kind === "data" && b.kind === "data") {
           return (
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
         }
         return 0;

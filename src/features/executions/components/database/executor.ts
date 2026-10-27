@@ -60,43 +60,44 @@ export const databaseExecutor: NodeExecutor<DatabaseData> = async ({
   const query = decode(rawQuery).trim();
 
   try {
-    const connectionString = await step.run("get-database-connection-url", async () => {
-      if (data.credentialId) {
-        const credential = await prisma.credential.findUnique({
-          where: {
-            id: data.credentialId,
-            userId,
-          },
-        });
+    const connectionString = await step.run(
+      "get-database-connection-url",
+      async () => {
+        if (data.credentialId) {
+          const credential = await prisma.credential.findUnique({
+            where: {
+              id: data.credentialId,
+              userId,
+            },
+          });
 
-        if (credential?.value) {
-          return credential.value.trim();
+          if (credential?.value) {
+            return credential.value.trim();
+          }
         }
-      }
 
-      if (data.connectionString?.trim()) {
-        const rawConn = Handlebars.compile(data.connectionString)(context);
-        return decode(rawConn).trim();
-      }
+        if (data.connectionString?.trim()) {
+          const rawConn = Handlebars.compile(data.connectionString)(context);
+          return decode(rawConn).trim();
+        }
 
-      if (process.env.POSTGRES_URL) {
-        return process.env.POSTGRES_URL.trim();
-      }
+        if (process.env.POSTGRES_URL) {
+          return process.env.POSTGRES_URL.trim();
+        }
 
-      if (process.env.DATABASE_URL) {
-        return process.env.DATABASE_URL.trim();
-      }
+        if (process.env.DATABASE_URL) {
+          return process.env.DATABASE_URL.trim();
+        }
 
-      throw new NonRetriableError(
-        "Database node: Database connection URL is required. Please select a credential or provide a Postgres connection URL.",
-      );
-    });
+        throw new NonRetriableError(
+          "Database node: Database connection URL is required. Please select a credential or provide a Postgres connection URL.",
+        );
+      },
+    );
 
     const result = await step.run("execute-sql-query", async () => {
       const sslConfig =
-        data.ssl === "disable"
-          ? false
-          : { rejectUnauthorized: false };
+        data.ssl === "disable" ? false : { rejectUnauthorized: false };
 
       const client = new Client({
         connectionString,
@@ -124,7 +125,9 @@ export const databaseExecutor: NodeExecutor<DatabaseData> = async ({
         };
       } catch (err: unknown) {
         const error = err as Error;
-        throw new NonRetriableError(`Database execution error: ${error.message}`);
+        throw new NonRetriableError(
+          `Database execution error: ${error.message}`,
+        );
       } finally {
         try {
           await client.end();

@@ -1,5 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,14 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
-import { CredentialType } from "@/generated/prisma";
 import {
   Select,
   SelectContent,
@@ -33,14 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea";
+import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
+import { CredentialType } from "@/generated/prisma";
 
 const formSchema = z.object({
   variableName: z
     .string()
     .min(1, { message: "Variable name is required" })
-    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, { 
-      message: "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
+    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, {
+      message:
+        "Variable name must start with a letter or underscore and contain only letters, numbers, and underscores",
     }),
   credentialId: z.string().optional(),
   botToken: z.string().optional(),
@@ -51,7 +52,14 @@ const formSchema = z.object({
 
 export type TelegramFormValues = z.infer<typeof formSchema>;
 
+import {
+  applyVariableQuickFix,
+  FieldDiagnostics,
+} from "@/features/editor/components/field-diagnostics";
+import { useSyncDraftNode } from "@/features/editor/hooks/use-flow-diagnostics";
+
 interface Props {
+  nodeId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: z.infer<typeof formSchema>) => void;
@@ -59,15 +67,14 @@ interface Props {
 }
 
 export const TelegramDialog = ({
+  nodeId,
   open,
   onOpenChange,
   onSubmit,
   defaultValues = {},
 }: Props) => {
-  const { 
-    data: credentials,
-    isLoading: isLoadingCredentials,
-  } = useCredentialsByType(CredentialType.TELEGRAM);
+  const { data: credentials, isLoading: isLoadingCredentials } =
+    useCredentialsByType(CredentialType.TELEGRAM);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,6 +87,9 @@ export const TelegramDialog = ({
       parseMode: defaultValues.parseMode || "HTML",
     },
   });
+
+  // Keep Flowcheck static analysis reactively updated from draft values while typing before Save
+  useSyncDraftNode(nodeId, form.watch(), open);
 
   useEffect(() => {
     if (open) {
@@ -122,14 +132,11 @@ export const TelegramDialog = ({
                 <FormItem>
                   <FormLabel>Variable Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="myTelegram"
-                      {...field}
-                    />
+                    <Input placeholder="myTelegram" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Use this name to reference the Telegram result in other nodes:{" "}
-                    {`{{${watchVariableName}.messageId}}`}
+                    Use this name to reference the Telegram result in other
+                    nodes: {`{{${watchVariableName}.messageId}}`}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -145,22 +152,22 @@ export const TelegramDialog = ({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    disabled={
-                      isLoadingCredentials
-                      || !credentials?.length
-                    }
+                    disabled={isLoadingCredentials || !credentials?.length}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder={credentials?.length ? "Select a Telegram bot credential" : "No saved Telegram credentials"} />
+                        <SelectValue
+                          placeholder={
+                            credentials?.length
+                              ? "Select a Telegram bot credential"
+                              : "No saved Telegram credentials"
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {credentials?.map((credential) => (
-                        <SelectItem
-                          key={credential.id}
-                          value={credential.id}
-                        >
+                        <SelectItem key={credential.id} value={credential.id}>
                           <div className="flex items-center gap-2">
                             <Image
                               src="/logos/telegram.svg"
@@ -188,7 +195,9 @@ export const TelegramDialog = ({
                 name="botToken"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Direct Bot Token (Optional if Credential is used)</FormLabel>
+                    <FormLabel>
+                      Direct Bot Token (Optional if Credential is used)
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="password"
@@ -218,8 +227,19 @@ export const TelegramDialog = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Telegram Chat ID (e.g. &apos;987654321&apos;) or channel (@channel_name). Supports {"{{variables}}"}.
+                    Telegram Chat ID (e.g. &apos;987654321&apos;) or channel
+                    (@channel_name). Supports {"{{variables}}"}.
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="chatId"
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "chatId",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -241,9 +261,15 @@ export const TelegramDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="HTML">HTML (&lt;b&gt;, &lt;i&gt;, &lt;code&gt;)</SelectItem>
-                      <SelectItem value="Markdown">Markdown (*bold*, _italic_, `code`)</SelectItem>
-                      <SelectItem value="None">Plain Text (No formatting)</SelectItem>
+                      <SelectItem value="HTML">
+                        HTML (&lt;b&gt;, &lt;i&gt;, &lt;code&gt;)
+                      </SelectItem>
+                      <SelectItem value="Markdown">
+                        Markdown (*bold*, _italic_, `code`)
+                      </SelectItem>
+                      <SelectItem value="None">
+                        Plain Text (No formatting)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -265,8 +291,24 @@ export const TelegramDialog = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Message to send. Supports Handlebars variables like {"{{googleForm.name}}"} or {"{{json variable}}"}.
+                    Message to send. Supports Handlebars variables like{" "}
+                    {"{{googleForm.name}}"} or {"{{json variable}}"}.
                   </FormDescription>
+                  <FieldDiagnostics
+                    nodeId={nodeId}
+                    field="text"
+                    value={field.value}
+                    onSelectPath={(val) =>
+                      form.setValue("text", val, { shouldValidate: true })
+                    }
+                    onQuickFix={(suggestion) => {
+                      form.setValue(
+                        "text",
+                        applyVariableQuickFix(field.value || "", suggestion),
+                        { shouldValidate: true },
+                      );
+                    }}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

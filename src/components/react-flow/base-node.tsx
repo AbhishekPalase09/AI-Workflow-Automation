@@ -20,18 +20,18 @@ export const BaseNode = forwardRef<HTMLDivElement, BaseNodeProps>(
       {...props}
     >
       {props.children}
-      {status ==="error" && (
+      {status === "error" && (
         <XCircleIcon className="absolute right-0.5 bottom-0.5 size-2 text-red-700 stroke-3" />
       )}
-       {status ==="success" && (
+      {status === "success" && (
         <CheckCircle2Icon className="absolute right-0.5 bottom-0.5 size-2 text-green-700 stroke-3" />
       )}
-      {status ==="loading" && (
+      {status === "loading" && (
         <Loader2Icon className="absolute -right-0.5 -bottom-0.5 size-2 text-blue-700 stroke-3 animate-spin" />
       )}
     </div>
   ),
-); 
+);
 /**
  * A container for a consistent header layout intended to be used inside the
  * `<BaseNode />` component.

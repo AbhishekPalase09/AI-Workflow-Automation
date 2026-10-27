@@ -3,8 +3,8 @@
 import { CredentialType } from "@/generated/prisma";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { 
-  useCreateCredential, 
+import {
+  useCreateCredential,
   useUpdateCredential,
   useSuspenseCredential,
 } from "../hooks/use-credentials";
@@ -86,11 +86,9 @@ interface CredentialFormProps {
     type: CredentialType;
     value: string;
   };
-};
+}
 
-export const CredentialForm = ({
-  initialData,
-}: CredentialFormProps) => {
+export const CredentialForm = ({ initialData }: CredentialFormProps) => {
   const router = useRouter();
   const createCredential = useCreateCredential();
   const updateCredential = useUpdateCredential();
@@ -114,7 +112,7 @@ export const CredentialForm = ({
       await updateCredential.mutateAsync({
         id: initialData.id,
         ...values,
-      })
+      });
     } else {
       await createCredential.mutateAsync(values, {
         onSuccess: (data) => {
@@ -122,10 +120,10 @@ export const CredentialForm = ({
         },
         onError: (error) => {
           handleError(error);
-        }
-      })
+        },
+      });
     }
-  }
+  };
 
   return (
     <>
@@ -143,119 +141,109 @@ export const CredentialForm = ({
         </CardHeader>
         <CardContent>
           <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="My API key" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <Input placeholder="My API key" {...field} />
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {credentialTypeOptions.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={option.value}
-                            >
-                              <div className="flex items-center gap-2">
-                                <Image
-                                  src={option.logo}
-                                  alt={option.label}
-                                  width={16}
-                                  height={16}
-                                />
-                                {option.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        {credentialTypeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            <div className="flex items-center gap-2">
+                              <Image
+                                src={option.logo}
+                                alt={option.label}
+                                width={16}
+                                height={16}
+                              />
+                              {option.label}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {selectedType === CredentialType.DATABASE
-                          ? "Database Connection URL"
-                          : selectedType === CredentialType.TELEGRAM
+              <FormField
+                control={form.control}
+                name="value"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {selectedType === CredentialType.DATABASE
+                        ? "Database Connection URL"
+                        : selectedType === CredentialType.TELEGRAM
                           ? "Telegram Bot Token"
                           : "API Key"}
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder={
-                            selectedType === CredentialType.DATABASE
-                              ? "postgresql://user:password@host:5432/dbname?sslmode=require"
-                              : "sk-..."
-                          }
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={
+                          selectedType === CredentialType.DATABASE
+                            ? "postgresql://user:password@host:5432/dbname?sslmode=require"
+                            : "sk-..."
+                        }
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <div className="flex gap-4">
-                  <Button
-                    type="submit"
-                    disabled={
-                      createCredential.isPending ||
-                      updateCredential.isPending
-                    }
-                  >
-                    {isEdit ? "Update" : "Create"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    asChild
-                  >
-                    <Link href="/credentials" prefetch>
-                      Cancel
-                    </Link>
-                  </Button>
-                </div>
-              </form>
+              <div className="flex gap-4">
+                <Button
+                  type="submit"
+                  disabled={
+                    createCredential.isPending || updateCredential.isPending
+                  }
+                >
+                  {isEdit ? "Update" : "Create"}
+                </Button>
+                <Button type="button" variant="outline" asChild>
+                  <Link href="/credentials" prefetch>
+                    Cancel
+                  </Link>
+                </Button>
+              </div>
+            </form>
           </Form>
         </CardContent>
       </Card>
     </>
-  )
+  );
 };
 
-export const CredentialView = ({
-  credentialId,
-}: { credentialId: string }) => {
+export const CredentialView = ({ credentialId }: { credentialId: string }) => {
   const { data: credential } = useSuspenseCredential(credentialId);
 
-  return <CredentialForm initialData={credential} />
+  return <CredentialForm initialData={credential} />;
 };
