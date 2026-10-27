@@ -20,11 +20,11 @@ import { telegramChannel } from "./channels/telegram";
 import { databaseChannel } from "./channels/database";
 
 export const executeWorkflow = inngest.createFunction(
-  { 
+  {
     id: "execute-workflow",
     retries: 0, // TODO: REMOVE IN PRODUCTION
   },
-  { 
+  {
     event: "workflows/execute.workflow",
     channels: [
       httpRequestChannel(),
