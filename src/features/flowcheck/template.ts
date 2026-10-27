@@ -7,6 +7,8 @@ export interface Placeholder {
   root: string;
   path: string[];
   helper?: string;
+  rendered: boolean;
+  argIndex?: number;
   line: number;
   col: number;
   endCol: number;
@@ -86,6 +88,8 @@ function isPathExpression(node: unknown): node is HbsPathExpression {
 function processPathExpression(
   pathNode: HbsPathExpression,
   helper?: string,
+  rendered = false,
+  argIndex?: number,
 ): Placeholder | null {
   // Ignore @data variables (e.g. @index, @first, @root)
   if (pathNode.data) {
@@ -111,6 +115,8 @@ function processPathExpression(
     root,
     path: pathNode.parts.slice(1),
     helper,
+    rendered,
+    argIndex,
     line: pathNode.loc?.start?.line ?? 1,
     col: pathNode.loc?.start?.column ?? 0,
     endCol:
@@ -180,23 +186,26 @@ function walkStatements(
 
     switch (stmt.type) {
       case "MustacheStatement": {
-        // Zero params -> variable reference (or triple-stash variable reference)
+        // Zero params -> bare path variable reference (or triple-stash bare path reference)
         if (!stmt.params || stmt.params.length === 0) {
           if (isPathExpression(stmt.path)) {
-            const p = processPathExpression(stmt.path);
+            const p = processPathExpression(stmt.path, undefined, true);
             if (p) placeholders.push(p);
           }
         } else {
-          // Has params: path is helper name (e.g. {{json myVar.field}})
+          // Has params: path is helper name (e.g. {{json myVar.field}} or {{lookup googleForm.responses "X"}})
           const helperName = isPathExpression(stmt.path)
             ? stmt.path.original
             : undefined;
 
+          let argIdx = 0;
           for (const param of stmt.params) {
             if (isPathExpression(param)) {
-              const p = processPathExpression(param, helperName);
+              const p = processPathExpression(param, helperName, false, argIdx);
               if (p) placeholders.push(p);
             }
+            // Do NOT descend into SubExpressions or Literals: treat as unknown without errors
+            argIdx++;
           }
         }
         break;
@@ -209,11 +218,13 @@ function walkStatements(
           : undefined;
 
         if (stmt.params) {
+          let argIdx = 0;
           for (const param of stmt.params) {
             if (isPathExpression(param)) {
-              const p = processPathExpression(param, helperName);
+              const p = processPathExpression(param, helperName, false, argIdx);
               if (p) placeholders.push(p);
             }
+            argIdx++;
           }
         }
 

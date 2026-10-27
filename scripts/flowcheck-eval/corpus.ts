@@ -499,4 +499,38 @@ export const EVAL_CORPUS: EvalWorkflow[] = [
       ],
     };
   }),
+
+  // Google Form -> Database query with lookup helper for keys with spaces
+  {
+    id: "wf-googleform-db-lookup",
+    name: "Form Ratings Database Lookup Insert",
+    description:
+      "Database INSERT query using Handlebars lookup helper for fields with spaces",
+    triggerPayload: {
+      googleForm: {
+        formId: "f_survey",
+        formTitle: "Student Ratings Survey",
+        responseId: "resp_123",
+        timestamp: "2026-10-27T10:00:00Z",
+        respondentEmail: "student@school.edu",
+        responses: {
+          "Student Name": "Alice",
+          "Rating (1-5)": 5,
+        },
+      },
+    },
+    nodes: [
+      { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+      {
+        id: "db1",
+        type: "DATABASE",
+        data: {
+          variableName: "dbRatings",
+          query:
+            'INSERT INTO ratings (student, score) VALUES (\'{{lookup googleForm.responses "Student Name"}}\', {{lookup googleForm.responses "Rating (1-5)"}});',
+        },
+      },
+    ],
+    edges: [{ source: "t1", target: "db1" }],
+  },
 ];

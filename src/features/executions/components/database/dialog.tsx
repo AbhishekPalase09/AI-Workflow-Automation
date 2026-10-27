@@ -280,8 +280,10 @@ export const DatabaseDialog = ({
                   <FormDescription>
                     Supports standard SQL (<code>SELECT</code>,{" "}
                     <code>INSERT</code>, <code>UPDATE</code>,{" "}
-                    <code>DELETE</code>) with Handlebars variables like{" "}
-                    <code>{`{{googleForm.name}}`}</code>.
+                    <code>DELETE</code>) with Handlebars variables (e.g.{" "}
+                    <code>{`{{googleForm.name}}`}</code> or{" "}
+                    <code>{`{{lookup googleForm.responses "Student Name"}}`}</code>{" "}
+                    for dynamic keys with spaces).
                   </FormDescription>
                   <FieldDiagnostics
                     nodeId={nodeId}

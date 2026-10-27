@@ -38,11 +38,11 @@ export function getUnclosedTemplatePrefix(
   // Extract text after "{{"
   const afterOpen = textBeforeCursor.slice(lastOpen + 2);
 
-  // Strip leading '{', leading whitespace, and optional 'json ' helper
+  // Strip leading '{', leading whitespace, and optional helper ('json ' or 'lookup ')
   const clean = afterOpen
     .replace(/^\{+/, "")
     .trimStart()
-    .replace(/^json\s+/i, "");
+    .replace(/^(?:json|lookup)\s+/i, "");
 
   const match = clean.match(/^([a-zA-Z0-9_$.]*)$/);
   if (match) {
@@ -59,6 +59,16 @@ export function hasJsonHelperBeforeCursor(textBeforeCursor: string): boolean {
   if (lastOpen === -1) return false;
   const afterOpen = textBeforeCursor.slice(lastOpen + 2);
   return /^\s*json\s+/i.test(afterOpen);
+}
+
+/**
+ * Checks if the text before the cursor is inside a Handlebars "lookup" helper.
+ */
+export function hasLookupHelperBeforeCursor(textBeforeCursor: string): boolean {
+  const lastOpen = textBeforeCursor.lastIndexOf("{{");
+  if (lastOpen === -1) return false;
+  const afterOpen = textBeforeCursor.slice(lastOpen + 2);
+  return /^\s*lookup\s+/i.test(afterOpen);
 }
 
 /**
@@ -107,14 +117,20 @@ export function matchScore(query: string, target: string): number {
 
 /**
  * Computes the template insertion expression given the path, its scalar kind,
- * whether the field accepts "scalar" or "any", and whether the text already has "json ".
+ * whether the field accepts "scalar" or "any", whether the text already has "json ",
+ * and whether the text is inside a "lookup " helper.
  */
 export function computeTemplateInsertion(
   path: string,
   scalar: boolean,
   accepts: "scalar" | "any",
   hasExistingJson: boolean,
+  hasExistingLookup = false,
 ): string {
+  if (hasExistingLookup) {
+    // In lookup argument position, always insert plain path without json helper
+    return `lookup ${path}`;
+  }
   if (hasExistingJson) {
     // Keep existing json helper, do not add a second one
     return `json ${path}`;
@@ -151,6 +167,7 @@ export function insertTemplatePathAtCursor(
 
   const lastOpen = beforeCursor.lastIndexOf("{{");
   const hasExistingJson = hasJsonHelperBeforeCursor(beforeCursor);
+  const hasExistingLookup = hasLookupHelperBeforeCursor(beforeCursor);
   const accepts = options?.accepts ?? "any";
   const scalar = options?.scalar ?? true;
 
@@ -159,6 +176,7 @@ export function insertTemplatePathAtCursor(
     scalar,
     accepts,
     hasExistingJson,
+    hasExistingLookup,
   );
 
   if (lastOpen === -1) {
@@ -250,6 +268,7 @@ export function FieldDiagnostics({
   const isTypingPlaceholder = unclosedPrefix !== null;
   const typedPrefix = (unclosedPrefix ?? "").toLowerCase();
   const hasExistingJson = hasJsonHelperBeforeCursor(textBeforeCursor);
+  const hasExistingLookup = hasLookupHelperBeforeCursor(textBeforeCursor);
 
   // Filter out E6 syntax errors for this field while typing in an unclosed placeholder so it does not flash
   const visibleDiagnostics = useMemo(() => {
@@ -289,12 +308,15 @@ export function FieldDiagnostics({
           </span>
           {scoredSuggestions.map((item) => {
             const isScalarOnlyField = resolvedAccepts === "scalar";
-            const isDisabled = isScalarOnlyField && !item.scalar;
+            // If inside lookup helper, object/array is expected as first argument, so do NOT disable
+            const isDisabled =
+              !hasExistingLookup && isScalarOnlyField && !item.scalar;
             const insertText = computeTemplateInsertion(
               item.path,
               item.scalar,
               resolvedAccepts,
               hasExistingJson,
+              hasExistingLookup,
             );
 
             return (

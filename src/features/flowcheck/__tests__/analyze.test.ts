@@ -545,4 +545,149 @@ describe("Static Data-Flow Analyzer (Phase 2.5)", () => {
       expect(e6Errors).toHaveLength(0);
     });
   });
+
+  describe("Built-in lookup helper & non-scalar check rules", () => {
+    // (a) the exact INSERT query above with a graph GoogleForm -> Database yields zero errors and zero W3
+    it("(a) exact INSERT query with lookup helper yields zero errors and zero W3", () => {
+      const nodes: FlowNode[] = [
+        { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+        {
+          id: "db1",
+          type: "DATABASE",
+          data: {
+            variableName: "dbRatings",
+            query: `INSERT INTO ratings (student, score) VALUES ('{{lookup googleForm.responses "Student Name"}}', {{lookup googleForm.responses "Rating (1-5)"}});`,
+          },
+        },
+      ];
+      const edges: FlowEdge[] = [{ source: "t1", target: "db1" }];
+      const diags = analyze(nodes, edges);
+
+      const errors = diags.filter((d) => d.severity === "error");
+      const w3 = diags.filter((d) => d.code === "W3");
+      expect(errors).toHaveLength(0);
+      expect(w3).toHaveLength(0);
+    });
+
+    // (b) bare {{googleForm.responses}} still yields W3 (and E3 in a scalar-only field)
+    it("(b) bare {{googleForm.responses}} yields W3 in any-field and E3 in scalar-only field", () => {
+      // In any-field (Database query)
+      const anyNodes: FlowNode[] = [
+        { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+        {
+          id: "db1",
+          type: "DATABASE",
+          data: {
+            variableName: "myDb",
+            query: "SELECT {{googleForm.responses}}",
+          },
+        },
+      ];
+      const anyEdges: FlowEdge[] = [{ source: "t1", target: "db1" }];
+      const anyDiags = analyze(anyNodes, anyEdges);
+      expect(anyDiags.some((d) => d.code === "W3")).toBe(true);
+
+      // In scalar-only field (HTTP_REQUEST endpoint)
+      const scalarNodes: FlowNode[] = [
+        { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+        {
+          id: "http1",
+          type: "HTTP_REQUEST",
+          data: {
+            variableName: "apiCall",
+            endpoint: "https://api.example.com/item/{{googleForm.responses}}",
+          },
+        },
+      ];
+      const scalarEdges: FlowEdge[] = [{ source: "t1", target: "http1" }];
+      const scalarDiags = analyze(scalarNodes, scalarEdges);
+      expect(scalarDiags.some((d) => d.code === "E3")).toBe(true);
+    });
+
+    // (c) {{json googleForm.responses}} yields none
+    it("(c) {{json googleForm.responses}} yields zero W3 and zero E3", () => {
+      const nodes: FlowNode[] = [
+        { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+        {
+          id: "db1",
+          type: "DATABASE",
+          data: {
+            variableName: "myDb",
+            query: "INSERT INTO tbl VALUES ({{json googleForm.responses}})",
+          },
+        },
+      ];
+      const edges: FlowEdge[] = [{ source: "t1", target: "db1" }];
+      const diags = analyze(nodes, edges);
+
+      expect(diags.some((d) => d.code === "W3")).toBe(false);
+      expect(diags.some((d) => d.code === "E3")).toBe(false);
+    });
+
+    // (d) {{lookup googleForm.responses "X"}} inside an HTTP endpoint (scalar-only) yields no E3
+    it("(d) {{lookup googleForm.responses 'X'}} inside an HTTP endpoint yields no E3", () => {
+      const nodes: FlowNode[] = [
+        { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+        {
+          id: "http1",
+          type: "HTTP_REQUEST",
+          data: {
+            variableName: "apiCall",
+            endpoint: `https://api.example.com/student/{{lookup googleForm.responses "X"}}`,
+          },
+        },
+      ];
+      const edges: FlowEdge[] = [{ source: "t1", target: "http1" }];
+      const diags = analyze(nodes, edges);
+
+      expect(diags.some((d) => d.code === "E3")).toBe(false);
+      expect(diags.some((d) => d.code === "W3")).toBe(false);
+    });
+
+    // (e) {{#if googleForm.responses}} yields no W3
+    it("(e) {{#if googleForm.responses}} yields no W3", () => {
+      const nodes: FlowNode[] = [
+        { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+        {
+          id: "slack1",
+          type: "SLACK",
+          data: {
+            variableName: "msg",
+            content: "{{#if googleForm.responses}}Has responses{{/if}}",
+          },
+        },
+      ];
+      const edges: FlowEdge[] = [{ source: "t1", target: "slack1" }];
+      const diags = analyze(nodes, edges);
+
+      expect(diags.some((d) => d.code === "W3")).toBe(false);
+      expect(diags.some((d) => d.code === "E3")).toBe(false);
+    });
+
+    // (f) lookup on a scalar variable yields a warning
+    it("(f) lookup on a scalar variable yields a warning", () => {
+      const nodes: FlowNode[] = [
+        { id: "t1", type: "GOOGLE_FORM_TRIGGER", data: {} },
+        {
+          id: "db1",
+          type: "DATABASE",
+          data: {
+            variableName: "myDb",
+            query: `SELECT '{{lookup googleForm.responseId "fieldName"}}'`,
+          },
+        },
+      ];
+      const edges: FlowEdge[] = [{ source: "t1", target: "db1" }];
+      const diags = analyze(nodes, edges);
+
+      const scalarLookupWarning = diags.find(
+        (d) =>
+          d.severity === "warning" &&
+          d.message.includes(
+            "First argument to lookup helper must be an object or array",
+          ),
+      );
+      expect(scalarLookupWarning).toBeDefined();
+    });
+  });
 });

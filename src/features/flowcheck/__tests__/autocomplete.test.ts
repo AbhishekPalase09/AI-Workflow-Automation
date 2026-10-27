@@ -3,6 +3,7 @@ import {
   computeTemplateInsertion,
   getUnclosedTemplatePrefix,
   hasJsonHelperBeforeCursor,
+  hasLookupHelperBeforeCursor,
   insertTemplatePathAtCursor,
   matchScore,
 } from "@/features/editor/components/field-diagnostics";
@@ -47,6 +48,15 @@ describe("Autocomplete & Template Prefix Tests", () => {
       expect(getUnclosedTemplatePrefix("{{ json db")).toBe("db");
       expect(getUnclosedTemplatePrefix("{{  myVar")).toBe("myVar");
     });
+
+    it("handles lookup helper prefix {{lookup googleForm.", () => {
+      expect(getUnclosedTemplatePrefix("{{lookup googleForm.")).toBe(
+        "googleForm.",
+      );
+      expect(getUnclosedTemplatePrefix("{{ lookup googleForm.")).toBe(
+        "googleForm.",
+      );
+    });
   });
 
   describe("hasJsonHelperBeforeCursor", () => {
@@ -59,6 +69,18 @@ describe("Autocomplete & Template Prefix Tests", () => {
     it("returns false when json helper is not present", () => {
       expect(hasJsonHelperBeforeCursor("SELECT {{db")).toBe(false);
       expect(hasJsonHelperBeforeCursor("SELECT {{")).toBe(false);
+    });
+  });
+
+  describe("hasLookupHelperBeforeCursor", () => {
+    it("detects lookup helper after unclosed {{", () => {
+      expect(hasLookupHelperBeforeCursor("SELECT {{lookup db")).toBe(true);
+      expect(hasLookupHelperBeforeCursor("SELECT {{ lookup db")).toBe(true);
+    });
+
+    it("returns false when lookup helper is not present", () => {
+      expect(hasLookupHelperBeforeCursor("SELECT {{db")).toBe(false);
+      expect(hasLookupHelperBeforeCursor("SELECT {{json db")).toBe(false);
     });
   });
 
@@ -98,6 +120,18 @@ describe("Autocomplete & Template Prefix Tests", () => {
       expect(res).toBe("json dbRetrive.rows");
       expect(res).not.toContain("json json");
     });
+
+    it("5. inside lookup argument position, never inserts json helper", () => {
+      const res = computeTemplateInsertion(
+        "googleForm.responses",
+        false,
+        "any",
+        false,
+        true,
+      );
+      expect(res).toBe("lookup googleForm.responses");
+      expect(res).not.toContain("json");
+    });
   });
 
   describe("insertTemplatePathAtCursor", () => {
@@ -129,6 +163,20 @@ describe("Autocomplete & Template Prefix Tests", () => {
         { scalar: false, accepts: "any" },
       );
       expect(result).toBe("SELECT {{json dbRetrive.rows}}");
+    });
+
+    it("inserts template path inside lookup helper without json helper", () => {
+      const fullText = "INSERT INTO ratings VALUES ('{{lookup googleForm.')";
+      const result = insertTemplatePathAtCursor(
+        fullText,
+        "googleForm.responses",
+        49,
+        { scalar: false, accepts: "any" },
+      );
+      expect(result).toBe(
+        "INSERT INTO ratings VALUES ('{{lookup googleForm.responses}}')",
+      );
+      expect(result).not.toContain("json");
     });
 
     it("partial token replacement preserves suffix", () => {

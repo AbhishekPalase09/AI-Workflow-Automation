@@ -585,9 +585,29 @@ export function analyze(
               });
             }
 
-            // Type check: Non-scalar resolution in template placeholder
-            const isJsonHelper = p.helper === "json";
-            if (!isJsonHelper && !isScalar(lookupRes.schema)) {
+            // Model the built-in lookup helper: first arg must resolve to an object or array
+            if (p.helper === "lookup" && p.argIndex === 0) {
+              if (
+                isScalar(lookupRes.schema) &&
+                lookupRes.schema.k !== "unknown"
+              ) {
+                diagnostics.push({
+                  code: "W2",
+                  severity: "warning",
+                  nodeId: node.id,
+                  field: input.field,
+                  line: p.line,
+                  col: p.col,
+                  endCol: p.endCol,
+                  message: `First argument to lookup helper must be an object or array, but "${root}${
+                    p.path.length > 0 ? `.${p.path.join(".")}` : ""
+                  }" resolves to a scalar.`,
+                });
+              }
+            }
+
+            // Type check: Non-scalar resolution applies ONLY to placeholders rendered directly (bare paths)
+            if (p.rendered && !isScalar(lookupRes.schema)) {
               if (input.accepts === "scalar") {
                 diagnostics.push({
                   code: "E3",
