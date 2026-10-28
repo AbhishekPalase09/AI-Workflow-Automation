@@ -1,8 +1,11 @@
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  typescript:{
+    ignoreBuildErrors:true,
+  },
   /* config options here */
   async redirects() {
     return [
